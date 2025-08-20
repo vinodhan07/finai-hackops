@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -16,206 +16,65 @@ export type Database = {
     Tables: {
       budget_categories: {
         Row: {
-          budget: number | null
-          color: string | null
+          budget: number
+          color: string
           created_at: string
-          icon: string | null
+          icon: string
           id: number
           name: string
-          spent: number | null
-          tenant_id: string
+          spent: number
           updated_at: string
           user_id: string
         }
         Insert: {
-          budget?: number | null
-          color?: string | null
+          budget?: number
+          color?: string
           created_at?: string
-          icon?: string | null
+          icon?: string
           id?: number
           name: string
-          spent?: number | null
-          tenant_id: string
+          spent?: number
           updated_at?: string
           user_id: string
         }
         Update: {
-          budget?: number | null
-          color?: string | null
+          budget?: number
+          color?: string
           created_at?: string
-          icon?: string | null
+          icon?: string
           id?: number
           name?: string
-          spent?: number | null
-          tenant_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "budget_categories_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["tenant_id"]
-          },
-        ]
-      }
-      eb_readings: {
-        Row: {
-          created_at: string
-          end_units: number
-          id: string
-          notes: string | null
-          period: string
-          reading_date: string
-          start_units: number
-          total_cost: number
-          units_consumed: number | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          end_units: number
-          id?: string
-          notes?: string | null
-          period?: string
-          reading_date?: string
-          start_units: number
-          total_cost: number
-          units_consumed?: number | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          end_units?: number
-          id?: string
-          notes?: string | null
-          period?: string
-          reading_date?: string
-          start_units?: number
-          total_cost?: number
-          units_consumed?: number | null
+          spent?: number
           updated_at?: string
           user_id?: string
         }
         Relationships: []
       }
-      form16_history: {
-        Row: {
-          form16_data: Json
-          generated_at: string
-          id: string
-          tax_information_id: string
-          user_id: string
-        }
-        Insert: {
-          form16_data: Json
-          generated_at?: string
-          id?: string
-          tax_information_id: string
-          user_id: string
-        }
-        Update: {
-          form16_data?: Json
-          generated_at?: string
-          id?: string
-          tax_information_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "form16_history_tax_information_id_fkey"
-            columns: ["tax_information_id"]
-            isOneToOne: false
-            referencedRelation: "tax_information"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       income_sources: {
         Row: {
-          amount: number | null
+          amount: number
           created_at: string
           date: string
           id: number
           name: string
-          tenant_id: string
           updated_at: string
           user_id: string
         }
         Insert: {
-          amount?: number | null
+          amount?: number
           created_at?: string
           date: string
           id?: number
           name: string
-          tenant_id: string
           updated_at?: string
           user_id: string
         }
         Update: {
-          amount?: number | null
+          amount?: number
           created_at?: string
           date?: string
           id?: number
           name?: string
-          tenant_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "income_sources_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["tenant_id"]
-          },
-        ]
-      }
-      petrol_readings: {
-        Row: {
-          cost_per_liter: number
-          created_at: string
-          end_kms: number
-          id: string
-          kms_run: number | null
-          notes: string | null
-          petrol_amount: number
-          reading_date: string
-          start_kms: number
-          total_cost: number | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          cost_per_liter: number
-          created_at?: string
-          end_kms: number
-          id?: string
-          kms_run?: number | null
-          notes?: string | null
-          petrol_amount: number
-          reading_date?: string
-          start_kms: number
-          total_cost?: number | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          cost_per_liter?: number
-          created_at?: string
-          end_kms?: number
-          id?: string
-          kms_run?: number | null
-          notes?: string | null
-          petrol_amount?: number
-          reading_date?: string
-          start_kms?: number
-          total_cost?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -224,217 +83,73 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
-          cibil_last_updated: string | null
-          cibil_score: number | null
           created_at: string
+          email: string | null
           full_name: string | null
           id: string
           tenant_id: string
           updated_at: string
+          user_id: string
         }
         Insert: {
           avatar_url?: string | null
-          cibil_last_updated?: string | null
-          cibil_score?: number | null
           created_at?: string
-          full_name?: string | null
-          id: string
-          tenant_id: string
-          updated_at?: string
-        }
-        Update: {
-          avatar_url?: string | null
-          cibil_last_updated?: string | null
-          cibil_score?: number | null
-          created_at?: string
+          email?: string | null
           full_name?: string | null
           id?: string
           tenant_id?: string
           updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
       reminders: {
         Row: {
-          amount: number
-          auto_pay: boolean | null
-          category: string
+          amount: number | null
+          category: string | null
+          completed: boolean | null
           created_at: string
           description: string | null
           due_date: string
-          frequency: string
-          id: string
-          status: string
-          tenant_id: string
+          id: number
+          priority: string | null
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
-          amount?: number
-          auto_pay?: boolean | null
-          category?: string
+          amount?: number | null
+          category?: string | null
+          completed?: boolean | null
           created_at?: string
           description?: string | null
           due_date: string
-          frequency?: string
-          id?: string
-          status?: string
-          tenant_id: string
+          id?: number
+          priority?: string | null
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
-          amount?: number
-          auto_pay?: boolean | null
-          category?: string
+          amount?: number | null
+          category?: string | null
+          completed?: boolean | null
           created_at?: string
           description?: string | null
           due_date?: string
-          frequency?: string
-          id?: string
-          status?: string
-          tenant_id?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      savings_goals: {
-        Row: {
-          auto_debit: boolean | null
-          created_at: string
-          current_amount: number
-          description: string | null
-          icon: string | null
-          id: string
-          monthly_contribution: number | null
-          priority: string | null
-          status: string
-          target_amount: number
-          target_date: string | null
-          tenant_id: string
-          title: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          auto_debit?: boolean | null
-          created_at?: string
-          current_amount?: number
-          description?: string | null
-          icon?: string | null
-          id?: string
-          monthly_contribution?: number | null
+          id?: number
           priority?: string | null
-          status?: string
-          target_amount?: number
-          target_date?: string | null
-          tenant_id: string
-          title: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          auto_debit?: boolean | null
-          created_at?: string
-          current_amount?: number
-          description?: string | null
-          icon?: string | null
-          id?: string
-          monthly_contribution?: number | null
-          priority?: string | null
-          status?: string
-          target_amount?: number
-          target_date?: string | null
-          tenant_id?: string
           title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      tax_information: {
-        Row: {
-          address: string | null
-          basic_salary: number | null
-          bonus: number | null
-          created_at: string
-          employer_address: string | null
-          employer_name: string | null
-          financial_year: string
-          home_loan_interest: number | null
-          hra: number | null
-          id: string
-          lic_premium: number | null
-          medical_insurance: number | null
-          name: string
-          other_allowances: number | null
-          other_deductions: number | null
-          pan_number: string
-          professional_tax: number | null
-          provident_fund: number | null
-          special_allowance: number | null
-          tax_payable: number | null
-          tds_deducted: number | null
-          total_gross_salary: number | null
-          tuition_fees: number | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          address?: string | null
-          basic_salary?: number | null
-          bonus?: number | null
-          created_at?: string
-          employer_address?: string | null
-          employer_name?: string | null
-          financial_year: string
-          home_loan_interest?: number | null
-          hra?: number | null
-          id?: string
-          lic_premium?: number | null
-          medical_insurance?: number | null
-          name: string
-          other_allowances?: number | null
-          other_deductions?: number | null
-          pan_number: string
-          professional_tax?: number | null
-          provident_fund?: number | null
-          special_allowance?: number | null
-          tax_payable?: number | null
-          tds_deducted?: number | null
-          total_gross_salary?: number | null
-          tuition_fees?: number | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          address?: string | null
-          basic_salary?: number | null
-          bonus?: number | null
-          created_at?: string
-          employer_address?: string | null
-          employer_name?: string | null
-          financial_year?: string
-          home_loan_interest?: number | null
-          hra?: number | null
-          id?: string
-          lic_premium?: number | null
-          medical_insurance?: number | null
-          name?: string
-          other_allowances?: number | null
-          other_deductions?: number | null
-          pan_number?: string
-          professional_tax?: number | null
-          provident_fund?: number | null
-          special_allowance?: number | null
-          tax_payable?: number | null
-          tds_deducted?: number | null
-          total_gross_salary?: number | null
-          tuition_fees?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -448,9 +163,8 @@ export type Database = {
           date: string
           description: string
           id: number
-          mode: string | null
-          status: string | null
-          tenant_id: string
+          mode: string
+          status: string
           updated_at: string
           user_id: string
         }
@@ -461,9 +175,8 @@ export type Database = {
           date: string
           description: string
           id?: number
-          mode?: string | null
-          status?: string | null
-          tenant_id: string
+          mode?: string
+          status?: string
           updated_at?: string
           user_id: string
         }
@@ -474,35 +187,19 @@ export type Database = {
           date?: string
           description?: string
           id?: number
-          mode?: string | null
-          status?: string | null
-          tenant_id?: string
+          mode?: string
+          status?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "transactions_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["tenant_id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      calculate_eb_cost: {
-        Args: { units_consumed: number }
-        Returns: number
-      }
-      generate_tenant_id: {
-        Args: { user_name: string }
-        Returns: string
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
