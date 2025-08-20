@@ -54,7 +54,7 @@ const Dashboard = () => {
         .from('reminders')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'pending')
+        .eq('completed', false)
         .gte('due_date', today.toISOString().split('T')[0])
         .lte('due_date', thirtyDaysFromNow.toISOString().split('T')[0])
         .order('due_date', { ascending: true })

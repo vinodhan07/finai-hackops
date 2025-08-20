@@ -93,28 +93,40 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     try {
       // Load budgets
-      const { data: budgetData } = await supabase
+      const { data: budgetData, error: budgetError } = await supabase
         .from('budget_categories')
         .select('*')
         .eq('user_id', user.id)
         .eq('tenant_id', currentTenantId)
         .order('created_at', { ascending: false });
 
+      if (budgetError) {
+        console.error('Error loading budgets:', budgetError);
+      }
+
       // Load income
-      const { data: incomeData } = await supabase
+      const { data: incomeData, error: incomeError } = await supabase
         .from('income_sources')
         .select('*')
         .eq('user_id', user.id)
         .eq('tenant_id', currentTenantId)
         .order('created_at', { ascending: false });
 
+      if (incomeError) {
+        console.error('Error loading income:', incomeError);
+      }
+
       // Load transactions
-      const { data: transactionData } = await supabase
+      const { data: transactionData, error: transactionError } = await supabase
         .from('transactions')
         .select('*')
         .eq('user_id', user.id)
         .eq('tenant_id', currentTenantId)
         .order('created_at', { ascending: false });
+
+      if (transactionError) {
+        console.error('Error loading transactions:', transactionError);
+      }
 
       if (budgetData) setBudgets(budgetData);
       if (incomeData) setIncome(incomeData);

@@ -23,6 +23,7 @@ export type Database = {
           id: number
           name: string
           spent: number
+          tenant_id: string
           updated_at: string
           user_id: string
         }
@@ -34,6 +35,7 @@ export type Database = {
           id?: number
           name: string
           spent?: number
+          tenant_id?: string
           updated_at?: string
           user_id: string
         }
@@ -45,6 +47,7 @@ export type Database = {
           id?: number
           name?: string
           spent?: number
+          tenant_id?: string
           updated_at?: string
           user_id?: string
         }
@@ -57,6 +60,7 @@ export type Database = {
           date: string
           id: number
           name: string
+          tenant_id: string
           updated_at: string
           user_id: string
         }
@@ -66,6 +70,7 @@ export type Database = {
           date: string
           id?: number
           name: string
+          tenant_id?: string
           updated_at?: string
           user_id: string
         }
@@ -75,6 +80,7 @@ export type Database = {
           date?: string
           id?: number
           name?: string
+          tenant_id?: string
           updated_at?: string
           user_id?: string
         }
@@ -165,6 +171,7 @@ export type Database = {
           id: number
           mode: string
           status: string
+          tenant_id: string
           updated_at: string
           user_id: string
         }
@@ -177,6 +184,7 @@ export type Database = {
           id?: number
           mode?: string
           status?: string
+          tenant_id?: string
           updated_at?: string
           user_id: string
         }
@@ -189,6 +197,7 @@ export type Database = {
           id?: number
           mode?: string
           status?: string
+          tenant_id?: string
           updated_at?: string
           user_id?: string
         }
