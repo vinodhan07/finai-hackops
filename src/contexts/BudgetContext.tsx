@@ -76,7 +76,7 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const { data: profile } = await supabase
         .from('profiles')
         .select('tenant_id')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single();
 
       if (profile?.tenant_id) {

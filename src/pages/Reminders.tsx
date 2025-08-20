@@ -8,11 +8,8 @@ import { Layout } from "@/components/Layout";
 import { 
   Plus, 
   Calendar, 
-  CreditCard, 
   Bell, 
-  Clock, 
   Trash2, 
-  Edit, 
   AlertCircle,
   CheckCircle,
   DollarSign
@@ -20,21 +17,22 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 interface Reminder {
-  id: string;
+  id: number;
   title: string;
   description: string | null;
-  amount: number;
+  amount: number | null;
   due_date: string;
-  frequency: string;
-  category: string;
-  status: string;
-  auto_pay: boolean;
+  category: string | null;
+  priority: string | null;
+  completed: boolean | null;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
 }
 
 const categories = [
@@ -48,10 +46,10 @@ const categories = [
   "other"
 ];
 
-const frequencies = [
-  { value: "once", label: "One-time" },
-  { value: "monthly", label: "Monthly" },
-  { value: "yearly", label: "Yearly" }
+const priorities = [
+  { value: "high", label: "High" },
+  { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" }
 ];
 
 const Reminders = () => {
@@ -64,9 +62,8 @@ const Reminders = () => {
     description: "",
     amount: "",
     due_date: "",
-    frequency: "monthly",
     category: "utilities",
-    auto_pay: false
+    priority: "medium"
   });
 
   const fetchReminders = async () => {
@@ -93,48 +90,19 @@ const Reminders = () => {
     fetchReminders();
   }, [user]);
 
-  const addToGoogleCalendar = async (reminderId: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('google-calendar-integration', {
-        body: {
-          user_id: user?.id,
-          reminder_id: reminderId,
-          action: 'create'
-        }
-      });
-
-      if (error) throw error;
-      toast.success('Calendar reminder created successfully!');
-    } catch (error) {
-      console.error('Error creating calendar event:', error);
-      toast.error('Failed to create calendar reminder');
-    }
-  };
-
   const handleAddReminder = async () => {
-    if (!newReminder.title || !newReminder.amount || !newReminder.due_date || !user) return;
+    if (!newReminder.title || !newReminder.due_date || !user) return;
     
     try {
-      // Get user profile to get tenant_id
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile) throw new Error('Profile not found');
-
       const reminderData = {
         title: newReminder.title,
         description: newReminder.description || null,
-        amount: parseFloat(newReminder.amount),
+        amount: newReminder.amount ? parseFloat(newReminder.amount) : null,
         due_date: newReminder.due_date,
-        frequency: newReminder.frequency,
         category: newReminder.category,
-        auto_pay: newReminder.auto_pay,
-        status: 'pending',
+        priority: newReminder.priority,
         user_id: user.id,
-        tenant_id: profile.tenant_id
+        completed: false
       };
 
       const { data, error } = await supabase
@@ -151,22 +119,18 @@ const Reminders = () => {
         description: "",
         amount: "",
         due_date: "",
-        frequency: "monthly",
         category: "utilities",
-        auto_pay: false
+        priority: "medium"
       });
       setIsDialogOpen(false);
       toast.success('Reminder created successfully!');
-      
-      // Add to Google Calendar
-      await addToGoogleCalendar(data.id);
     } catch (error) {
       console.error('Error creating reminder:', error);
       toast.error('Failed to create reminder');
     }
   };
 
-  const handleDeleteReminder = async (reminderId: string) => {
+  const handleDeleteReminder = async (reminderId: number) => {
     try {
       const { error } = await supabase
         .from('reminders')
@@ -183,73 +147,44 @@ const Reminders = () => {
     }
   };
 
-  const markAsPaid = async (reminderId: string) => {
+  const markAsCompleted = async (reminderId: number) => {
     try {
-      const reminder = reminders.find(r => r.id === reminderId);
-      if (!reminder) return;
-
-      // Update reminder status
       const { error } = await supabase
         .from('reminders')
-        .update({ status: 'paid' })
+        .update({ completed: true })
         .eq('id', reminderId);
 
       if (error) throw error;
 
-      // Get user profile to get tenant_id
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user?.id)
-        .single();
-
-      if (!profile) throw new Error('Profile not found');
-
-      // Add transaction for the paid bill
-      const { error: transactionError } = await supabase
-        .from('transactions')
-        .insert([{
-          user_id: user?.id,
-          tenant_id: profile.tenant_id,
-          date: new Date().toISOString().split('T')[0],
-          description: `Bill Payment - ${reminder.title}`,
-          amount: -reminder.amount, // Negative amount for expense
-          category: reminder.category,
-          mode: "Bill Payment",
-          status: "completed"
-        }]);
-
-      if (transactionError) throw transactionError;
-
       setReminders(reminders.map(r =>
         r.id === reminderId
-          ? { ...r, status: 'paid' }
+          ? { ...r, completed: true }
           : r
       ));
-      toast.success('Bill marked as paid and deducted from balance');
+      toast.success('Reminder marked as completed');
     } catch (error) {
       console.error('Error updating reminder:', error);
       toast.error('Failed to update reminder');
     }
   };
 
-  const getStatusColor = (status: string, dueDate: string) => {
+  const getStatusColor = (completed: boolean | null, dueDate: string) => {
     const today = new Date();
     const due = new Date(dueDate);
     const daysUntilDue = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-    if (status === 'paid') return 'bg-success-light text-budget-good border-budget-good';
+    if (completed) return 'bg-success-light text-budget-good border-budget-good';
     if (daysUntilDue < 0) return 'bg-destructive/10 text-destructive border-destructive';
     if (daysUntilDue <= 3) return 'bg-warning-light text-budget-warning border-budget-warning';
     return 'bg-muted text-muted-foreground border-muted-foreground';
   };
 
-  const getStatusText = (status: string, dueDate: string) => {
+  const getStatusText = (completed: boolean | null, dueDate: string) => {
     const today = new Date();
     const due = new Date(dueDate);
     const daysUntilDue = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-    if (status === 'paid') return 'Paid';
+    if (completed) return 'Completed';
     if (daysUntilDue < 0) return `Overdue by ${Math.abs(daysUntilDue)} days`;
     if (daysUntilDue === 0) return 'Due today';
     if (daysUntilDue === 1) return 'Due tomorrow';
@@ -257,7 +192,7 @@ const Reminders = () => {
     return `Due in ${daysUntilDue} days`;
   };
 
-  const getCategoryIcon = (category: string) => {
+  const getCategoryIcon = (category: string | null) => {
     switch (category) {
       case 'utilities': return '⚡';
       case 'insurance': return '🛡️';
@@ -271,14 +206,14 @@ const Reminders = () => {
   };
 
   const totalUpcoming = reminders
-    .filter(r => r.status === 'pending')
-    .reduce((sum, r) => sum + r.amount, 0);
+    .filter(r => !r.completed && r.amount)
+    .reduce((sum, r) => sum + (r.amount || 0), 0);
 
   const dueSoon = reminders.filter(r => {
     const today = new Date();
     const due = new Date(r.due_date);
     const daysUntilDue = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    return r.status === 'pending' && daysUntilDue <= 7;
+    return !r.completed && daysUntilDue <= 7;
   }).length;
 
   return (
@@ -286,8 +221,8 @@ const Reminders = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Bill Reminders</h1>
-            <p className="text-muted-foreground">Manage your recurring bills and payments</p>
+            <h1 className="text-3xl font-bold text-foreground">Reminders</h1>
+            <p className="text-muted-foreground">Manage your upcoming tasks and bills</p>
           </div>
           
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -303,16 +238,25 @@ const Reminders = () => {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="title">Bill Title</Label>
+                  <Label htmlFor="title">Title</Label>
                   <Input
                     id="title"
-                    placeholder="e.g., Electricity Bill"
+                    placeholder="e.g., Pay electricity bill"
                     value={newReminder.title}
                     onChange={(e) => setNewReminder({ ...newReminder, title: e.target.value })}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="amount">Amount (₹)</Label>
+                  <Label htmlFor="description">Description (Optional)</Label>
+                  <Input
+                    id="description"
+                    placeholder="Additional details"
+                    value={newReminder.description}
+                    onChange={(e) => setNewReminder({ ...newReminder, description: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="amount">Amount (₹) - Optional</Label>
                   <Input
                     id="amount"
                     type="number"
@@ -331,15 +275,15 @@ const Reminders = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="frequency">Frequency</Label>
-                  <Select value={newReminder.frequency} onValueChange={(value) => setNewReminder({ ...newReminder, frequency: value })}>
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select value={newReminder.priority} onValueChange={(value) => setNewReminder({ ...newReminder, priority: value })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select frequency" />
+                      <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                     <SelectContent>
-                      {frequencies.map(freq => (
-                        <SelectItem key={freq.value} value={freq.value}>
-                          {freq.label}
+                      {priorities.map(priority => (
+                        <SelectItem key={priority.value} value={priority.value}>
+                          {priority.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -362,14 +306,6 @@ const Reminders = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="auto_pay"
-                    checked={newReminder.auto_pay}
-                    onCheckedChange={(checked) => setNewReminder({ ...newReminder, auto_pay: checked })}
-                  />
-                  <Label htmlFor="auto_pay">Auto-pay enabled</Label>
                 </div>
                 <Button onClick={handleAddReminder} className="w-full gradient-primary">
                   Create Reminder
@@ -438,8 +374,8 @@ const Reminders = () => {
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
                           <h3 className="font-medium text-card-foreground">{reminder.title}</h3>
-                          <Badge className={`text-xs ${getStatusColor(reminder.status, reminder.due_date)}`}>
-                            {getStatusText(reminder.status, reminder.due_date)}
+                          <Badge className={`text-xs ${getStatusColor(reminder.completed, reminder.due_date)}`}>
+                            {getStatusText(reminder.completed, reminder.due_date)}
                           </Badge>
                         </div>
                         <div className="flex items-center space-x-4 mt-1">
@@ -447,30 +383,31 @@ const Reminders = () => {
                             <Calendar className="w-3 h-3 mr-1" />
                             {new Date(reminder.due_date).toLocaleDateString()}
                           </p>
-                          <p className="text-sm text-muted-foreground flex items-center">
-                            <Clock className="w-3 h-3 mr-1" />
-                            {reminder.frequency}
-                          </p>
-                          {reminder.auto_pay && (
+                          {reminder.priority && (
                             <Badge variant="outline" className="text-xs">
-                              Auto-pay
+                              {reminder.priority.charAt(0).toUpperCase() + reminder.priority.slice(1)} Priority
                             </Badge>
                           )}
                         </div>
+                        {reminder.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{reminder.description}</p>
+                        )}
                       </div>
                     </div>
                     
                     <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <p className="font-bold text-card-foreground">₹{reminder.amount.toLocaleString()}</p>
-                      </div>
+                      {reminder.amount && (
+                        <div className="text-right">
+                          <p className="font-bold text-card-foreground">₹{reminder.amount.toLocaleString()}</p>
+                        </div>
+                      )}
                       
                       <div className="flex items-center space-x-2">
-                        {reminder.status === 'pending' && (
+                        {!reminder.completed && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => markAsPaid(reminder.id)}
+                            onClick={() => markAsCompleted(reminder.id)}
                             className="text-budget-good hover:text-budget-good"
                           >
                             <CheckCircle className="w-4 h-4" />

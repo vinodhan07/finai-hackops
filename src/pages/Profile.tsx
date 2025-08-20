@@ -71,8 +71,8 @@ const Profile = () => {
             accountNumber: "",
             ifscCode: "",
             accountType: "",
-            cibilScore: data.cibil_score ? data.cibil_score.toString() : "",
-            cibilLastUpdated: data.cibil_last_updated ? new Date(data.cibil_last_updated).toLocaleDateString() : ""
+            cibilScore: "",
+            cibilLastUpdated: ""
           });
         }
       } catch (error) {
@@ -109,17 +109,7 @@ const Profile = () => {
         updated_at: new Date().toISOString()
       };
 
-      // Only update CIBIL score if it's provided and valid
-      if (userInfo.cibilScore && userInfo.cibilScore.trim() !== "") {
-        const cibilScore = parseInt(userInfo.cibilScore);
-        if (cibilScore >= 300 && cibilScore <= 900) {
-          updateData.cibil_score = cibilScore;
-          updateData.cibil_last_updated = new Date().toISOString();
-        } else {
-          toast.error('CIBIL Score must be between 300 and 900');
-          return;
-        }
-      }
+      // CIBIL score functionality will be implemented when database column is added
 
       const { error } = await supabase
         .from('profiles')

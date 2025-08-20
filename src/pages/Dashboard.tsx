@@ -74,12 +74,12 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('cibil_score')
-        .eq('id', user.id)
+        .select('*')
+        .eq('user_id', user.id)
         .single();
 
       if (error) throw error;
-      setCibilScore(data?.cibil_score || null);
+      setCibilScore(null); // Will be implemented when column is added
     } catch (error) {
       console.error('Error fetching CIBIL score:', error);
     }
