@@ -51,8 +51,8 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user, onSignOut }) =>
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
-        .single();
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
@@ -91,7 +91,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user, onSignOut }) =>
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: avatarUrl })
-        .eq('id', user.id);
+        .eq('user_id', user.id);
 
       if (updateError) {
         throw updateError;
@@ -113,7 +113,7 @@ const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ user, onSignOut }) =>
       const { error } = await supabase
         .from('profiles')
         .update({ full_name: fullName })
-        .eq('id', user.id);
+        .eq('user_id', user.id);
 
       if (error) {
         throw error;

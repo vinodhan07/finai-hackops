@@ -55,8 +55,8 @@ const Profile = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
-          .single();
+          .eq('user_id', user.id)
+          .maybeSingle();
 
         if (error) throw error;
 
@@ -114,7 +114,7 @@ const Profile = () => {
       const { error } = await supabase
         .from('profiles')
         .update(updateData)
-        .eq('id', user.id);
+        .eq('user_id', user.id);
 
       if (error) throw error;
 

@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          action_url: string | null
+          alert_type: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          severity: string
+          tenant_id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_url?: string | null
+          alert_type: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          severity?: string
+          tenant_id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_url?: string | null
+          alert_type?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          severity?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       budget_categories: {
         Row: {
           budget: number
@@ -53,6 +95,93 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_accounts: {
+        Row: {
+          account_name: string
+          account_type: string
+          balance: number
+          created_at: string
+          currency: string
+          id: string
+          is_active: boolean
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_type: string
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          tenant_id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_type?: string
+          balance?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          is_active?: boolean
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      financial_goals: {
+        Row: {
+          created_at: string
+          current_amount: number
+          description: string | null
+          goal_type: string
+          id: string
+          priority: string
+          status: string
+          target_amount: number | null
+          target_date: string | null
+          tenant_id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_amount?: number
+          description?: string | null
+          goal_type: string
+          id?: string
+          priority?: string
+          status?: string
+          target_amount?: number | null
+          target_date?: string | null
+          tenant_id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_amount?: number
+          description?: string | null
+          goal_type?: string
+          id?: string
+          priority?: string
+          status?: string
+          target_amount?: number | null
+          target_date?: string | null
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       income_sources: {
         Row: {
           amount: number
@@ -86,33 +215,93 @@ export type Database = {
         }
         Relationships: []
       }
+      investments: {
+        Row: {
+          amount_invested: number
+          created_at: string
+          current_value: number
+          expected_return_rate: number | null
+          id: string
+          investment_name: string
+          investment_type: string
+          maturity_date: string | null
+          purchase_date: string
+          risk_level: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_invested: number
+          created_at?: string
+          current_value?: number
+          expected_return_rate?: number | null
+          id?: string
+          investment_name: string
+          investment_type: string
+          maturity_date?: string | null
+          purchase_date: string
+          risk_level?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_invested?: number
+          created_at?: string
+          current_value?: number
+          expected_return_rate?: number | null
+          id?: string
+          investment_name?: string
+          investment_type?: string
+          maturity_date?: string | null
+          purchase_date?: string
+          risk_level?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
+          cibil_last_updated: string | null
+          cibil_score: number | null
           created_at: string
+          date_of_birth: string | null
           email: string | null
           full_name: string | null
           id: string
+          phone: string | null
           tenant_id: string
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          cibil_last_updated?: string | null
+          cibil_score?: number | null
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
           tenant_id?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
+          cibil_last_updated?: string | null
+          cibil_score?: number | null
           created_at?: string
+          date_of_birth?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
           tenant_id?: string
           updated_at?: string
           user_id?: string
@@ -155,6 +344,54 @@ export type Database = {
           due_date?: string
           id?: number
           priority?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      savings_goals: {
+        Row: {
+          category: string
+          created_at: string
+          current_amount: number
+          description: string | null
+          id: string
+          priority: string
+          status: string
+          target_amount: number
+          target_date: string | null
+          tenant_id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          current_amount?: number
+          description?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          target_amount: number
+          target_date?: string | null
+          tenant_id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          current_amount?: number
+          description?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          target_amount?: number
+          target_date?: string | null
+          tenant_id?: string
           title?: string
           updated_at?: string
           user_id?: string
