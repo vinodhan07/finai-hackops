@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +22,15 @@ interface SavingsGoal {
   target_date: string;
   priority: 'high' | 'medium' | 'low';
   category: string;
-  auto_debit: boolean;
-  monthly_contribution: number;
   created_at: string;
+  description?: string;
+  status?: string;
+  tenant_id?: string;
+  updated_at?: string;
+  user_id?: string;
+  // Legacy fields for UI compatibility
+  auto_debit?: boolean;
+  monthly_contribution?: number;
 }
 
 const categories = [
@@ -37,32 +45,8 @@ const categories = [
 ];
 
 const Savings = () => {
-  const [goals, setGoals] = useState<SavingsGoal[]>([
-    {
-      id: "1",
-      title: "Emergency Fund",
-      target_amount: 100000,
-      current_amount: 45000,
-      target_date: "2024-12-31",
-      priority: "high",
-      category: "emergency",
-      auto_debit: true,
-      monthly_contribution: 5000,
-      created_at: "2024-01-01"
-    },
-    {
-      id: "2", 
-      title: "Vacation to Japan",
-      target_amount: 200000,
-      current_amount: 80000,
-      target_date: "2024-11-15",
-      priority: "medium",
-      category: "vacation",
-      auto_debit: false,
-      monthly_contribution: 0,
-      created_at: "2024-02-01"
-    }
-  ]);
+  const { user } = useAuth();
+  const [goals, setGoals] = useState<SavingsGoal[]>([]);
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newGoal, setNewGoal] = useState({
@@ -75,41 +59,100 @@ const Savings = () => {
     monthly_contribution: ""
   });
 
-  const handleAddGoal = () => {
-    if (!newGoal.title || !newGoal.target_amount || !newGoal.target_date) return;
+  useEffect(() => {
+    const fetchSavingsGoals = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('savings_goals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching savings goals:', error);
+        return;
+      }
+      
+      if (data) {
+        setGoals(data.map(goal => ({
+          ...goal,
+          priority: goal.priority as 'high' | 'medium' | 'low',
+          auto_debit: false, // Default value for UI compatibility
+          monthly_contribution: 0 // Default value for UI compatibility
+        })));
+      }
+    };
     
-    const goal: SavingsGoal = {
-      id: Date.now().toString(),
+    fetchSavingsGoals();
+  }, [user]);
+
+  const handleAddGoal = async () => {
+    if (!newGoal.title || !newGoal.target_amount || !newGoal.target_date || !user) return;
+    
+    const goalData = {
+      user_id: user.id,
       title: newGoal.title,
       target_amount: parseFloat(newGoal.target_amount),
-      current_amount: 0,
       target_date: newGoal.target_date,
       priority: newGoal.priority,
       category: newGoal.category,
-      auto_debit: newGoal.auto_debit,
-      monthly_contribution: newGoal.auto_debit ? parseFloat(newGoal.monthly_contribution) : 0,
-      created_at: new Date().toISOString()
     };
 
-    setGoals([...goals, goal]);
-    setNewGoal({
-      title: "",
-      target_amount: "",
-      target_date: "",
-      priority: "medium",
-      category: "emergency",
-      auto_debit: false,
-      monthly_contribution: ""
-    });
-    setIsDialogOpen(false);
-    toast.success('Savings goal created successfully!');
+    const { data, error } = await supabase
+      .from('savings_goals')
+      .insert([goalData])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating savings goal:', error);
+      toast.error('Failed to create savings goal');
+      return;
+    }
+
+    if (data) {
+      setGoals([{
+        ...data,
+        priority: data.priority as 'high' | 'medium' | 'low',
+        auto_debit: false, // Default value for UI compatibility
+        monthly_contribution: 0 // Default value for UI compatibility
+      }, ...goals]);
+      setNewGoal({
+        title: "",
+        target_amount: "",
+        target_date: "",
+        priority: "medium",
+        category: "emergency",
+        auto_debit: false,
+        monthly_contribution: ""
+      });
+      setIsDialogOpen(false);
+      toast.success('Savings goal created successfully!');
+    }
   };
 
-  const addContribution = (goalId: string, amount: number) => {
-    setGoals(goals.map(goal => 
-      goal.id === goalId 
-        ? { ...goal, current_amount: Math.min(goal.current_amount + amount, goal.target_amount) }
-        : goal
+  const addContribution = async (goalId: string, amount: number) => {
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    const newAmount = Math.min(goal.current_amount + amount, goal.target_amount);
+    
+    const { error } = await supabase
+      .from('savings_goals')
+      .update({ current_amount: newAmount })
+      .eq('id', goalId);
+
+    if (error) {
+      console.error('Error updating savings goal:', error);
+      toast.error('Failed to add contribution');
+      return;
+    }
+
+    setGoals(goals.map(g => 
+      g.id === goalId 
+        ? { ...g, current_amount: newAmount }
+        : g
     ));
     toast.success(`₹${amount.toLocaleString()} added to your savings goal!`);
   };
