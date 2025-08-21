@@ -74,7 +74,7 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('cibil_score, cibil_last_updated')
         .eq('user_id', user.id)
         .maybeSingle();
 
