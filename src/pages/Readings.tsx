@@ -1,156 +1,138 @@
 import { useState, useEffect } from "react";
-import { Plus, Gauge, Edit2, Trash2, Calendar, Calculator } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Layout } from "@/components/Layout";
-import { format } from "date-fns";
+import { toast } from "sonner";
+import { Plus, Gauge, Zap, Droplets, Flame, Edit2, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface Reading {
   id: string;
   reading_type: string;
-  meter_number?: string;
+  meter_number: string | null;
   current_reading: number;
   previous_reading: number;
   consumption: number;
   reading_date: string;
   cost_per_unit: number;
   total_cost: number;
-  notes?: string;
+  notes: string | null;
   created_at: string;
 }
 
-const READING_TYPES = [
-  { value: "electricity", label: "Electricity", icon: "⚡", unit: "kWh" },
-  { value: "water", label: "Water", icon: "💧", unit: "liters" },
-  { value: "gas", label: "Gas", icon: "🔥", unit: "cubic meters" },
-  { value: "internet", label: "Internet", icon: "🌐", unit: "GB" },
-];
+const readingTypeIcons = {
+  electricity: Zap,
+  water: Droplets,
+  gas: Flame,
+  default: Gauge,
+};
+
+const readingTypeColors = {
+  electricity: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  water: "bg-blue-100 text-blue-800 border-blue-200", 
+  gas: "bg-orange-100 text-orange-800 border-orange-200",
+  default: "bg-gray-100 text-gray-800 border-gray-200",
+};
 
 export default function Readings() {
+  const { user } = useAuth();
   const [readings, setReadings] = useState<Reading[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [editingReading, setEditingReading] = useState<Reading | null>(null);
   const [formData, setFormData] = useState({
     reading_type: "",
     meter_number: "",
     current_reading: "",
     previous_reading: "",
-    reading_date: new Date().toISOString().split('T')[0],
     cost_per_unit: "",
-    notes: ""
+    reading_date: new Date().toISOString().split("T")[0],
+    notes: "",
   });
-  
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
+    if (user) {
+      fetchReadings();
     }
-    fetchReadings();
-  }, [user, navigate]);
+  }, [user]);
 
   const fetchReadings = async () => {
     try {
       const { data, error } = await supabase
-        .from('readings')
-        .select('*')
-        .order('reading_date', { ascending: false });
+        .from("readings")
+        .select("*")
+        .eq("user_id", user?.id)
+        .order("reading_date", { ascending: false });
 
       if (error) throw error;
       setReadings(data || []);
     } catch (error) {
-      console.error('Error fetching readings:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch readings",
-        variant: "destructive",
-      });
+      console.error("Error fetching readings:", error);
+      toast.error("Failed to fetch readings");
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateValues = (current: number, previous: number, costPerUnit: number) => {
-    const consumption = Math.max(0, current - previous);
-    const totalCost = consumption * costPerUnit;
-    return { consumption, totalCost };
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!user) return;
 
-    const currentReading = parseFloat(formData.current_reading);
-    const previousReading = parseFloat(formData.previous_reading || "0");
-    const costPerUnit = parseFloat(formData.cost_per_unit || "0");
-    
-    const { consumption, totalCost } = calculateValues(currentReading, previousReading, costPerUnit);
-
     try {
+      const currentReading = parseFloat(formData.current_reading);
+      const previousReading = parseFloat(formData.previous_reading);
+      const costPerUnit = parseFloat(formData.cost_per_unit);
+      const consumption = currentReading - previousReading;
+      const totalCost = consumption * costPerUnit;
+
       const readingData = {
         user_id: user.id,
         reading_type: formData.reading_type,
         meter_number: formData.meter_number || null,
         current_reading: currentReading,
         previous_reading: previousReading,
-        consumption: consumption,
-        reading_date: formData.reading_date,
+        consumption,
         cost_per_unit: costPerUnit,
         total_cost: totalCost,
+        reading_date: formData.reading_date,
         notes: formData.notes || null,
       };
 
       if (editingReading) {
         const { error } = await supabase
-          .from('readings')
+          .from("readings")
           .update(readingData)
-          .eq('id', editingReading.id);
-        
+          .eq("id", editingReading.id);
         if (error) throw error;
-        
-        toast({
-          title: "Success",
-          description: "Reading updated successfully",
-        });
+        toast.success("Reading updated successfully");
       } else {
-        const { error } = await supabase
-          .from('readings')
-          .insert([readingData]);
-        
+        const { error } = await supabase.from("readings").insert([readingData]);
         if (error) throw error;
-        
-        toast({
-          title: "Success",
-          description: "Reading added successfully",
-        });
+        toast.success("Reading added successfully");
       }
 
-      setIsDialogOpen(false);
+      setDialogOpen(false);
       setEditingReading(null);
-      resetForm();
+      setFormData({
+        reading_type: "",
+        meter_number: "",
+        current_reading: "",
+        previous_reading: "",
+        cost_per_unit: "",
+        reading_date: new Date().toISOString().split("T")[0],
+        notes: "",
+      });
       fetchReadings();
     } catch (error) {
-      console.error('Error saving reading:', error);
-      toast({
-        title: "Error",
-        description: "Failed to save reading",
-        variant: "destructive",
-      });
+      console.error("Error saving reading:", error);
+      toast.error("Failed to save reading");
     }
   };
 
@@ -161,96 +143,87 @@ export default function Readings() {
       meter_number: reading.meter_number || "",
       current_reading: reading.current_reading.toString(),
       previous_reading: reading.previous_reading.toString(),
-      reading_date: reading.reading_date,
       cost_per_unit: reading.cost_per_unit.toString(),
-      notes: reading.notes || ""
+      reading_date: reading.reading_date,
+      notes: reading.notes || "",
     });
-    setIsDialogOpen(true);
+    setDialogOpen(true);
   };
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('readings')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from("readings").delete().eq("id", id);
       if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Reading deleted successfully",
-      });
+      toast.success("Reading deleted successfully");
       fetchReadings();
     } catch (error) {
-      console.error('Error deleting reading:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete reading",
-        variant: "destructive",
-      });
+      console.error("Error deleting reading:", error);
+      toast.error("Failed to delete reading");
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      reading_type: "",
-      meter_number: "",
-      current_reading: "",
-      previous_reading: "",
-      reading_date: new Date().toISOString().split('T')[0],
-      cost_per_unit: "",
-      notes: ""
-    });
+  const getIcon = (type: string) => {
+    const IconComponent = readingTypeIcons[type as keyof typeof readingTypeIcons] || readingTypeIcons.default;
+    return <IconComponent className="w-4 h-4" />;
   };
 
-  const getReadingTypeInfo = (type: string) => {
-    return READING_TYPES.find(rt => rt.value === type) || { label: type, icon: "📊", unit: "units" };
+  const getTypeColor = (type: string) => {
+    return readingTypeColors[type as keyof typeof readingTypeColors] || readingTypeColors.default;
   };
 
-  if (!user) {
-    return null;
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading readings...</div>
+        </div>
+      </Layout>
+    );
   }
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Meter Readings</h1>
-            <p className="text-muted-foreground">Track your utility meter readings and consumption</p>
+            <h1 className="text-3xl font-bold tracking-tight">Utility Readings</h1>
+            <p className="text-muted-foreground">
+              Track your electricity, water, and gas meter readings
+            </p>
           </div>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => { resetForm(); setEditingReading(null); }}>
+              <Button>
                 <Plus className="w-4 h-4 mr-2" />
                 Add Reading
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
-                <DialogTitle>{editingReading ? "Edit Reading" : "Add New Reading"}</DialogTitle>
+                <DialogTitle>
+                  {editingReading ? "Edit Reading" : "Add New Reading"}
+                </DialogTitle>
                 <DialogDescription>
-                  Enter your meter reading details to track consumption and costs.
+                  Enter your utility meter reading details below.
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="reading_type">Reading Type</Label>
-                  <Select 
-                    value={formData.reading_type} 
-                    onValueChange={(value) => setFormData({...formData, reading_type: value})}
+                  <Select
+                    value={formData.reading_type}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, reading_type: value })
+                    }
                     required
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select reading type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {READING_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.icon} {type.label}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="electricity">Electricity</SelectItem>
+                      <SelectItem value="water">Water</SelectItem>
+                      <SelectItem value="gas">Gas</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -260,23 +233,14 @@ export default function Readings() {
                   <Input
                     id="meter_number"
                     value={formData.meter_number}
-                    onChange={(e) => setFormData({...formData, meter_number: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, meter_number: e.target.value })
+                    }
                     placeholder="Enter meter number"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="current_reading">Current Reading</Label>
-                    <Input
-                      id="current_reading"
-                      type="number"
-                      step="0.01"
-                      value={formData.current_reading}
-                      onChange={(e) => setFormData({...formData, current_reading: e.target.value})}
-                      required
-                    />
-                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="previous_reading">Previous Reading</Label>
                     <Input
@@ -284,22 +248,30 @@ export default function Readings() {
                       type="number"
                       step="0.01"
                       value={formData.previous_reading}
-                      onChange={(e) => setFormData({...formData, previous_reading: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({ ...formData, previous_reading: e.target.value })
+                      }
+                      placeholder="0"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="current_reading">Current Reading</Label>
+                    <Input
+                      id="current_reading"
+                      type="number"
+                      step="0.01"
+                      value={formData.current_reading}
+                      onChange={(e) =>
+                        setFormData({ ...formData, current_reading: e.target.value })
+                      }
+                      placeholder="0"
+                      required
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="reading_date">Reading Date</Label>
-                    <Input
-                      id="reading_date"
-                      type="date"
-                      value={formData.reading_date}
-                      onChange={(e) => setFormData({...formData, reading_date: e.target.value})}
-                      required
-                    />
-                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="cost_per_unit">Cost per Unit</Label>
                     <Input
@@ -307,8 +279,23 @@ export default function Readings() {
                       type="number"
                       step="0.01"
                       value={formData.cost_per_unit}
-                      onChange={(e) => setFormData({...formData, cost_per_unit: e.target.value})}
+                      onChange={(e) =>
+                        setFormData({ ...formData, cost_per_unit: e.target.value })
+                      }
                       placeholder="0.00"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reading_date">Reading Date</Label>
+                    <Input
+                      id="reading_date"
+                      type="date"
+                      value={formData.reading_date}
+                      onChange={(e) =>
+                        setFormData({ ...formData, reading_date: e.target.value })
+                      }
+                      required
                     />
                   </div>
                 </div>
@@ -318,22 +305,27 @@ export default function Readings() {
                   <Textarea
                     id="notes"
                     value={formData.notes}
-                    onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, notes: e.target.value })
+                    }
                     placeholder="Any additional notes..."
-                    rows={2}
+                    rows={3}
                   />
                 </div>
 
                 <div className="flex justify-end space-x-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsDialogOpen(false)}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setDialogOpen(false);
+                      setEditingReading(null);
+                    }}
                   >
                     Cancel
                   </Button>
                   <Button type="submit">
-                    {editingReading ? "Update Reading" : "Add Reading"}
+                    {editingReading ? "Update" : "Add"} Reading
                   </Button>
                 </div>
               </form>
@@ -341,88 +333,81 @@ export default function Readings() {
           </Dialog>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : readings.length === 0 ? (
+        {readings.length === 0 ? (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-8">
+            <CardContent className="flex flex-col items-center justify-center py-16">
               <Gauge className="w-12 h-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">No readings yet</h3>
               <p className="text-muted-foreground text-center mb-4">
                 Start tracking your utility consumption by adding your first meter reading.
               </p>
-              <Button onClick={() => setIsDialogOpen(true)}>
+              <Button onClick={() => setDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Add First Reading
+                Add Your First Reading
               </Button>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
-            {readings.map((reading) => {
-              const typeInfo = getReadingTypeInfo(reading.reading_type);
-              return (
-                <Card key={reading.id}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-2xl">{typeInfo.icon}</span>
-                      <div>
-                        <CardTitle className="text-lg">{typeInfo.label}</CardTitle>
-                        <CardDescription>
-                          {reading.meter_number && `Meter: ${reading.meter_number}`}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {readings.map((reading) => (
+              <Card key={reading.id} className="relative">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <Badge className={`${getTypeColor(reading.reading_type)} border`}>
+                      {getIcon(reading.reading_type)}
+                      <span className="ml-1 capitalize">{reading.reading_type}</span>
+                    </Badge>
+                    <div className="flex space-x-1">
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(reading)}
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Edit2 className="w-3 h-3" />
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(reading.id)}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3 h-3" />
                       </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Current Reading</p>
-                        <p className="text-lg font-semibold">{reading.current_reading} {typeInfo.unit}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Consumption</p>
-                        <p className="text-lg font-semibold text-primary">{reading.consumption} {typeInfo.unit}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total Cost</p>
-                        <p className="text-lg font-semibold text-green-600">₹{reading.total_cost.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Reading Date</p>
-                        <div className="flex items-center space-x-1">
-                          <Calendar className="w-4 h-4" />
-                          <p className="text-sm">{format(new Date(reading.reading_date), 'MMM dd, yyyy')}</p>
-                        </div>
-                      </div>
+                  </div>
+                  <CardTitle className="text-lg">
+                    {reading.meter_number ? `Meter: ${reading.meter_number}` : `${reading.reading_type} Reading`}
+                  </CardTitle>
+                  <CardDescription>
+                    {new Date(reading.reading_date).toLocaleDateString()}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Current Reading:</span>
+                      <span className="font-medium">{reading.current_reading}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Previous Reading:</span>
+                      <span className="font-medium">{reading.previous_reading}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Consumption:</span>
+                      <span className="font-medium text-primary">{reading.consumption}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Total Cost:</span>
+                      <span className="font-semibold text-lg">₹{reading.total_cost.toFixed(2)}</span>
                     </div>
                     {reading.notes && (
-                      <div className="mt-4 p-3 bg-muted rounded-lg">
-                        <p className="text-sm">{reading.notes}</p>
+                      <div className="pt-2 border-t">
+                        <p className="text-sm text-muted-foreground">{reading.notes}</p>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         )}
       </div>
