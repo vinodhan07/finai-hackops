@@ -14,6 +14,7 @@ import Savings from "@/pages/Savings";
 import Alerts from "@/pages/Alerts";
 import Profile from "@/pages/Profile";
 import Reminders from "@/pages/Reminders";
+import Readings from "@/pages/Readings";
 
 import NotFound from "@/pages/NotFound";
 
@@ -35,6 +36,7 @@ function App() {
               <Route path="/savings" element={<Savings />} />
               <Route path="/alerts" element={<Alerts />} />
               <Route path="/reminders" element={<Reminders />} />
+              <Route path="/readings" element={<Readings />} />
               
               <Route path="/profile" element={<Profile />} />
               <Route path="/404" element={<NotFound />} />

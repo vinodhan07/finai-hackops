@@ -308,6 +308,57 @@ export type Database = {
         }
         Relationships: []
       }
+      readings: {
+        Row: {
+          consumption: number | null
+          cost_per_unit: number | null
+          created_at: string
+          current_reading: number
+          id: string
+          meter_number: string | null
+          notes: string | null
+          previous_reading: number | null
+          reading_date: string
+          reading_type: string
+          tenant_id: string
+          total_cost: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consumption?: number | null
+          cost_per_unit?: number | null
+          created_at?: string
+          current_reading: number
+          id?: string
+          meter_number?: string | null
+          notes?: string | null
+          previous_reading?: number | null
+          reading_date?: string
+          reading_type: string
+          tenant_id?: string
+          total_cost?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consumption?: number | null
+          cost_per_unit?: number | null
+          created_at?: string
+          current_reading?: number
+          id?: string
+          meter_number?: string | null
+          notes?: string | null
+          previous_reading?: number | null
+          reading_date?: string
+          reading_type?: string
+          tenant_id?: string
+          total_cost?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reminders: {
         Row: {
           amount: number | null
