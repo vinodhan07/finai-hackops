@@ -51,8 +51,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               const { data: profile, error } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('id', session.user.id)
-                .single();
+                .eq('user_id', session.user.id)
+                .maybeSingle();
 
               if (error) {
                 console.error('Error fetching user profile:', error);
