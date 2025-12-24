@@ -1,10 +1,3 @@
-That is great. Since you named the folder **`image`** (singular) and likely kept the original filenames, I have updated the paths in the README below to point exactly to that folder and those specific files.
-
-Here is the updated **`README.md`** code. You can copy-paste this directly.
-
----
-
-```markdown
 # FinAI - Your Smart Finance Partner 🚀
 
 **FinAI** is an intelligent financial management platform designed to help users track expenses, manage budgets, and make smarter financial decisions using the power of AI. It features **FinPilot**, an AI assistant that analyzes spending habits and answers financial queries in natural language.
