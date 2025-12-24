@@ -1,10 +1,3 @@
-Here is a comprehensive `README.md` file tailored for your **FinAI** project. I have structured it based on the features visible in your screenshots (AI Chatbot, Dashboard, Authentication) and your background with the MERN stack.
-
-I have included placeholders for the images you uploaded. **Make sure to place the image files in a folder named `screenshots` (or similar) inside your repository for the links to work.**
-
----
-
-```markdown
 # FinAI - Your Smart Finance Partner 🚀
 
 **FinAI** is an intelligent financial management platform designed to help users track expenses, manage budgets, and make smarter financial decisions using the power of AI. It features **FinPilot**, an AI assistant that analyzes spending habits and answers financial queries in natural language.
