@@ -2,7 +2,9 @@
 
 **FinAI** is an intelligent financial management platform designed to help users track expenses, manage budgets, and make smarter financial decisions using the power of AI. It features **FinPilot**, an AI assistant that analyzes spending habits and answers financial queries in natural language.
 
-![FinAI Login Page](./screenshots/Screenshot%202025-12-24%20112142.png)
+<p align="center">
+  <img src="screenshots/login.png" alt="FinAI Login Page" width="800">
+</p>
 
 ## 📋 Table of Contents
 - [Features](#features)
@@ -16,114 +18,121 @@
 
 * **🔐 Secure Authentication:** User sign-up and login functionality.
 * **🤖 FinPilot (AI Assistant):** A built-in chatbot that can answer questions like "What did I spend on food last month?" or "Analyze my transportation expenses."
-* **📊 Interactive Dashboard:** Visual overview of financial health.
+* **📊 Interactive Dashboard:** Visual overview of financial health with sidebar navigation.
 * **💰 Budget Management:** Set and track monthly budgets across different categories.
 * **🎯 Savings Goals:** Create and monitor progress toward specific financial targets.
 * **📅 Bill Reminders:** Never miss a payment with automated alerts.
-* **📱 QR Payment Integration:** Seamless payment options (demonstrative).
+* **📱 QR Payment Integration:** Seamless payment options.
 
 ## 🛠️ Tech Stack
 
-* **Frontend:** React.js / Next.js, Tailwind CSS (for styling)
+* **Frontend:** React.js, Tailwind CSS
 * **Backend:** Node.js, Express.js
 * **Database:** MongoDB
-* **AI/ML:** Integration with OpenAI API / Custom NLP Model for FinPilot
+* **AI Engine:** Integration with LLMs (OpenAI/Gemini) for FinPilot
 * **Authentication:** JWT (JSON Web Tokens)
 
 ## 📂 File Structure
 
-Below is the structure of the project:
-
 ```plaintext
 finai-hackops/
-├── client/                 # Frontend application
-│   ├── public/             # Static assets
+├── client/                 # Frontend React Application
+│   ├── public/
 │   ├── src/
-│   │   ├── assets/         # Images, icons, and fonts
-│   │   ├── components/     # Reusable UI components (Sidebar, Chatbot, etc.)
-│   │   ├── pages/          # Main application pages (Dashboard, Login, Signup)
-│   │   ├── services/       # API calls and backend integration
-│   │   ├── context/        # State management (AuthContext, FinanceContext)
-│   │   ├── App.js          # Main App component
-│   │   └── index.js        # Entry point
+│   │   ├── assets/         # Logos and static images
+│   │   ├── components/     # Reusable components
+│   │   │   ├── Sidebar.js
+│   │   │   ├── Navbar.js
+│   │   │   └── Chatbot.js  # FinPilot Logic
+│   │   ├── context/        # Auth and Finance Context
+│   │   ├── pages/          # Page Views
+│   │   │   ├── Dashboard.js
+│   │   │   ├── Login.js
+│   │   │   ├── Transactions.js
+│   │   │   └── Profile.js
+│   │   ├── App.js
+│   │   └── index.js
 │   └── package.json
 │
-├── server/                 # Backend API
-│   ├── config/             # Database connection and environment config
-│   ├── controllers/        # Request logic for Auth, Expenses, AI Chat
-│   ├── models/             # Mongoose models (User, Transaction, Budget)
-│   ├── routes/             # API routes
-│   ├── middleware/         # Auth verification and error handling
-│   ├── server.js           # Express server entry point (Port 8080)
+├── server/                 # Backend Node Application
+│   ├── config/             # DB and Environment config
+│   ├── controllers/        # Logic for API endpoints
+│   ├── models/             # Mongoose Schemas (User, Expense)
+│   ├── routes/             # API Routes (auth, chat, finance)
+│   ├── server.js           # Server Entry Point
 │   └── package.json
 │
-├── screenshots/            # Project demo images
-│   ├── Screenshot 2025-12-24 112142.png
-│   └── Screenshot 2025-12-24 113659.jpg
+├── screenshots/            # Demo Images (MUST EXIST FOR README)
+│   ├── login.png
+│   └── dashboard.jpg
 │
-└── README.md               # Project documentation
+└── README.md
 
 ```
 
 ## 📸 Screenshots
 
-### Login Interface
+### 1. Secure Login
 
-Clean and secure entry point for users.
+*A clean, secure entry point for managing your finances.*
 
-### Dashboard & FinPilot AI
+### 2. Dashboard & FinPilot AI
 
-The main hub featuring the AI Financial Assistant and navigation sidebar.
+*The central hub where users can view insights and chat with FinPilot for real-time financial advice.*
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-* Node.js (v14 or higher)
-* MongoDB (Local or Atlas URL)
-* Git
+* Node.js (v14+)
+* MongoDB
 
 ### Installation
 
-1. **Clone the repository**
+1. **Clone the repo**
 ```bash
 git clone [https://github.com/vinodhan07/finai-hackops.git](https://github.com/vinodhan07/finai-hackops.git)
-cd finai-hackops
 
 ```
 
 
-2. **Setup Backend**
+2. **Install Dependencies**
 ```bash
+# Install server deps
 cd server
 npm install
-# Create a .env file and add your MONGO_URI and API keys
-npm start
 
-```
-
-
-3. **Setup Frontend**
-```bash
+# Install client deps
 cd ../client
 npm install
+
+```
+
+
+3. **Run the App**
+```bash
+# Start Backend (from server folder)
+npm start
+
+# Start Frontend (from client folder)
 npm start
 
 ```
 
 
-4. **Access the App**
-Open your browser and navigate to `http://localhost:3000` (or `http://localhost:8080` depending on your config).
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please fork the repository and create a pull request.
 
 ```
 
-### Instructions to use this:
-1.  Create a folder named `screenshots` in your GitHub repository root.
-2.  Upload your two images (`Screenshot 2025-12-24 112142.png` and `Screenshot 2025-12-24 113659.jpg`) into that folder.
-3.  Copy the markdown code above and paste it into your `README.md` file.
+### Important: How to make the file structure match exactly
+Ensure your repository actually looks like this. If you haven't created the `screenshots` folder yet, run these commands in your terminal (inside your project folder):
+
+```bash
+mkdir screenshots
+# Now manually drag and drop your images into this new 'screenshots' folder
+# and rename them to 'login.png' and 'dashboard.jpg'
 
 ```
