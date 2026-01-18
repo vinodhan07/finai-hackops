@@ -188,4 +188,18 @@ All colors MUST be HSL for theme switching support.
   .shadow-glow {
     box-shadow: var(--shadow-glow);
   }
+
+  /* Animation Utilities */
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
 }

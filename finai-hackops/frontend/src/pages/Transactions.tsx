@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Layout } from "@/components/Layout";
+import { Layout } from "@/components/layout/Layout";
 import { Search, Filter, Download, ArrowUpRight, ArrowDownRight, X } from "lucide-react";
 import { useBudget } from "@/contexts/BudgetContext";
 import { useLocation } from "react-router-dom";

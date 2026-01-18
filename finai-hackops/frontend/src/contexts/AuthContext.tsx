@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/services/api';
 import { useToast } from "@/hooks/use-toast";
 
 export interface User {

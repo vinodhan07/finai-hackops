@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/services/api';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 

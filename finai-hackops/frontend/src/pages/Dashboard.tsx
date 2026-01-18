@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Layout } from "@/components/Layout";
+import { Layout } from "@/components/layout/Layout";
 import {
   TrendingUp,
   TrendingDown,
@@ -18,9 +18,32 @@ import {
 } from "lucide-react";
 import { useBudget } from "@/contexts/BudgetContext";
 import { useState, useEffect } from "react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { motion, AnimatePresence, Variants } from "framer-motion";
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100
+    }
+  }
+};
 
 const Dashboard = () => {
   const { getCurrentBalance, getTotalSpent, getBudgetUsagePercentage, getSavingsPercentage } = useBudget();
@@ -131,102 +154,120 @@ const Dashboard = () => {
         </div>
 
         {/* Key Metrics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
-          <Card className="gradient-card shadow-card border-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-card-foreground">Current Balance</CardTitle>
-              <DollarSign className="h-4 w-4 text-income" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-card-foreground">₹{currentBalance.toLocaleString()}</div>
-              <div className="flex items-center text-xs text-income">
-                <ArrowUpRight className="w-3 h-3 mr-1" />
-                +12.5% from last month
-              </div>
-            </CardContent>
-          </Card>
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div variants={itemVariants}>
+            <Card className="gradient-card shadow-card border-0 hover-scale cursor-default h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-card-foreground">Current Balance</CardTitle>
+                <DollarSign className="h-4 w-4 text-income" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-card-foreground">₹{currentBalance.toLocaleString()}</div>
+                <div className="flex items-center text-xs text-income">
+                  <ArrowUpRight className="w-3 h-3 mr-1" />
+                  +12.5% from last month
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card className="gradient-card shadow-card border-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-card-foreground">Monthly Spent</CardTitle>
-              <CreditCard className="h-4 w-4 text-expense" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-card-foreground">₹{monthlySpent.toLocaleString()}</div>
-              <div className="flex items-center text-xs text-expense">
-                <ArrowDownRight className="w-3 h-3 mr-1" />
-                +8.2% from last month
-              </div>
-            </CardContent>
-          </Card>
+          <motion.div variants={itemVariants}>
+            <Card className="gradient-card shadow-card border-0 hover-scale cursor-default h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-card-foreground">Monthly Spent</CardTitle>
+                <CreditCard className="h-4 w-4 text-expense" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-card-foreground">₹{monthlySpent.toLocaleString()}</div>
+                <div className="flex items-center text-xs text-expense">
+                  <ArrowDownRight className="w-3 h-3 mr-1" />
+                  +8.2% from last month
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card className="gradient-card shadow-card border-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-card-foreground">Budget Used</CardTitle>
-              <Target className="h-4 w-4 text-budget-warning" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-card-foreground">{budgetUsed}%</div>
-              <div className="w-full bg-muted rounded-full h-2 mt-2">
-                <div
-                  className={`rounded-full h-2 transition-all duration-300 ${budgetUsed > 100 ? 'bg-destructive' : 'bg-budget-warning'
-                    }`}
-                  style={{ width: `${Math.min(budgetUsed, 100)}%` }}
-                ></div>
-              </div>
-              {budgetUsed > 100 && (
-                <p className="text-xs text-destructive mt-1 font-medium">
-                  Over budget by {budgetUsed - 100}%
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="gradient-card shadow-card border-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-card-foreground">Savings Progress</CardTitle>
-              <TrendingUp className="h-4 w-4 text-savings" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-card-foreground">{savingsProgress}%</div>
-              <div className="w-full bg-muted rounded-full h-2 mt-2">
-                <div
-                  className="bg-savings rounded-full h-2 transition-all duration-300"
-                  style={{ width: `${savingsProgress}%` }}
-                ></div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="gradient-card shadow-card border-0">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-card-foreground">CIBIL Score</CardTitle>
-              <Activity className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-card-foreground">
-                {cibilScore ? cibilScore : "Not Set"}
-              </div>
-              <div className={`flex items-center text-xs ${cibilScore
-                ? cibilScore >= 750
-                  ? 'text-income'
-                  : cibilScore >= 650
-                    ? 'text-budget-warning'
-                    : 'text-expense'
-                : 'text-muted-foreground'
-                }`}>
-                {cibilScore ? (
-                  <>
-                    <Activity className="w-3 h-3 mr-1" />
-                    {cibilScore >= 750 ? 'Excellent' : cibilScore >= 650 ? 'Good' : 'Needs Improvement'}
-                  </>
-                ) : (
-                  'Add in Profile'
+          <motion.div variants={itemVariants}>
+            <Card className="gradient-card shadow-card border-0 hover-scale cursor-default h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-card-foreground">Budget Used</CardTitle>
+                <Target className="h-4 w-4 text-budget-warning" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-card-foreground">{budgetUsed}%</div>
+                <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden">
+                  <motion.div
+                    className={`rounded-full h-2 ${budgetUsed > 100 ? 'bg-destructive' : 'bg-budget-warning'}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(budgetUsed, 100)}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                  ></motion.div>
+                </div>
+                {budgetUsed > 100 && (
+                  <p className="text-xs text-destructive mt-1 font-medium">
+                    Over budget by {budgetUsed - 100}%
+                  </p>
                 )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Card className="gradient-card shadow-card border-0 hover-scale cursor-default h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-card-foreground">Savings Progress</CardTitle>
+                <TrendingUp className="h-4 w-4 text-savings" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-card-foreground">{savingsProgress}%</div>
+                <div className="w-full bg-muted rounded-full h-2 mt-2 overflow-hidden">
+                  <motion.div
+                    className="bg-savings rounded-full h-2"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${savingsProgress}%` }}
+                    transition={{ duration: 1, ease: "easeOut" }}
+                  ></motion.div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
+            <Card className="gradient-card shadow-card border-0 hover-scale cursor-default h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-card-foreground">CIBIL Score</CardTitle>
+                <Activity className="h-4 w-4 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-card-foreground">
+                  {cibilScore ? cibilScore : "Not Set"}
+                </div>
+                <div className={`flex items-center text-xs ${cibilScore
+                  ? cibilScore >= 750
+                    ? 'text-income'
+                    : cibilScore >= 650
+                      ? 'text-budget-warning'
+                      : 'text-expense'
+                  : 'text-muted-foreground'
+                  }`}>
+                  {cibilScore ? (
+                    <>
+                      <Activity className="w-3 h-3 mr-1" />
+                      {cibilScore >= 750 ? 'Excellent' : cibilScore >= 650 ? 'Good' : 'Needs Improvement'}
+                    </>
+                  ) : (
+                    'Add in Profile'
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </motion.div>
 
         {/* FinPilot AI Assistant */}
         <Card className="gradient-card shadow-card border-0">
@@ -238,24 +279,32 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Chat Messages */}
-            <div className="h-64 sm:h-80 md:h-96 overflow-y-auto space-y-4 p-3 md:p-4 bg-muted/20 rounded-lg">
-              {messages.map((msg, index) => (
-                <div key={index} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex max-w-[80%] ${msg.type === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-2`}>
-                    {msg.type === 'bot' && (
-                      <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center flex-shrink-0">
-                        <Bot className="w-4 h-4 text-primary-foreground" />
+            <div className="h-64 sm:h-80 md:h-96 overflow-y-auto space-y-4 p-3 md:p-4 bg-muted/20 rounded-lg flex flex-col">
+              <AnimatePresence initial={false}>
+                {messages.map((msg, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+                  >
+                    <div className={`flex max-w-[80%] ${msg.type === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-2`}>
+                      {msg.type === 'bot' && (
+                        <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center flex-shrink-0">
+                          <Bot className="w-4 h-4 text-primary-foreground" />
+                        </div>
+                      )}
+                      <div className={`p-3 rounded-2xl shadow-sm ${msg.type === 'user'
+                        ? 'bg-primary text-primary-foreground rounded-br-sm'
+                        : 'bg-card text-card-foreground rounded-bl-sm border border-border/50'
+                        }`}>
+                        {msg.content}
                       </div>
-                    )}
-                    <div className={`p-3 rounded-2xl ${msg.type === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-br-sm'
-                      : 'bg-card text-card-foreground rounded-bl-sm shadow-card'
-                      }`}>
-                      {msg.content}
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
 
             {/* Input Section */}
