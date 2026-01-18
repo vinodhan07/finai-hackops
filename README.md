@@ -1,132 +1,120 @@
-# FinAI - Your Smart Finance Partner 🚀
+# FinAI - Intelligent Financial Management 🚀
 
-**FinAI** is an intelligent financial management platform designed to help users track expenses, manage budgets, and make smarter financial decisions using the power of AI. It features **FinPilot**, an AI assistant that analyzes spending habits and answers financial queries in natural language.
+**FinAI** is a sophisticated financial management ecosystem designed to empower users with AI-driven insights, automated budget tracking, and seamless expense management. Leveraging the power of Large Language Models (LLMs), FinAI provides a personalized financial assistant, **FinPilot**, to help you make smarter financial decisions.
+
+---
+
+## 📸 Preview
 
 <p align="center">
-  <img src="./image/Screenshot%202025-12-24%20112142.png" alt="FinAI Login Page" width="800">
+  <img src="images/Login.png" alt="FinAI Login" width="45%" style="border-radius: 10px; margin: 5px;">
+  <img src="images/dashboard.jpg" alt="FinAI Dashboard" width="45%" style="border-radius: 10px; margin: 5px;">
 </p>
 
-## 📋 Table of Contents
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Screenshots](#screenshots)
-- [Contributing](#contributing)
+---
 
-## ✨ Features
+## ✨ Key Features
 
-* **🔐 Secure Authentication:** User sign-up and login functionality.
-* **🤖 FinPilot (AI Assistant):** A built-in chatbot that can answer questions like "What did I spend on food last month?" or "Analyze my transportation expenses."
-* **📊 Interactive Dashboard:** Visual overview of financial health with sidebar navigation.
-* **💰 Budget Management:** Set and track monthly budgets across different categories.
-* **🎯 Savings Goals:** Create and monitor progress toward specific financial targets.
-* **📅 Bill Reminders:** Never miss a payment with automated alerts.
-* **📱 QR Payment Integration:** Seamless payment options.
+- **🔐 Secure Authentication**: Robust user authentication system powered by JWT.
+- **🤖 FinPilot AI Assistant**: Chat with your financial data using Google Gemini. Ask questions like *"Analyze my spending last month"* or *"How can I save more on groceries?"*
+- **📊 Dynamic Dashboard**: Real-time visualization of your financial health, including income, expenses, and budget status.
+- **💰 Smart Budgeting**: Set category-wise budgets and get notified when you're nearing your limits.
+- **🎯 Goal Tracking**: Visualize your progress towards savings goals with interactive progress bars.
+- **📅 Automated Reminders**: Stay on top of your bills with a dedicated reminder system.
+- **📱 QR Integration**: Modern payment interface for quick transactions.
+- **📈 Insightful Reports**: Comprehensive breakdown of transactions and financial patterns.
+
+---
 
 ## 🛠️ Tech Stack
 
-* **Frontend:** React.js / Next.js, Tailwind CSS
-* **Backend:** Node.js, Express.js
-* **Database:** MongoDB
-* **AI Engine:** Integration with LLMs (OpenAI/Gemini) for FinPilot
-* **Authentication:** JWT (JSON Web Tokens)
+### Frontend
+- **Framework**: [React.js](https://reactjs.org/) + [Vite](https://vitejs.dev/)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **UI Components**: [Shadcn UI](https://ui.shadcn.com/)
 
-## 📂 File Structure
+### Backend
+- **Framework**: [FastAPI](https://fastapi.tiangolo.com/) (Python)
+- **Database**: [SQLite](https://www.sqlite.org/) (Development)
+- **AI Engine**: [Google Gemini Pro](https://ai.google.dev/)
+- **Authentication**: JWT (JSON Web Tokens) with Bcrypt hashing
+
+---
+
+## 📂 Project Structure
 
 ```plaintext
-finai-hackops/
-├── client/                 # Frontend Application
-│   ├── public/
-│   ├── src/
-│   │   ├── assets/         
-│   │   ├── components/     # Reusable components (Sidebar, Chatbot)
-│   │   ├── context/        # State management
-│   │   ├── pages/          # Dashboard, Login, Signup
-│   │   ├── App.js
-│   │   └── index.js
-│   └── package.json
-│
-├── server/                 # Backend Application
-│   ├── config/             
-│   ├── controllers/        
-│   ├── models/             # Database Schemas
-│   ├── routes/             
-│   ├── server.js           
-│   └── package.json
-│
-├── image/                  # Project Screenshots
-│   ├── Screenshot 2025-12-24 112142.png   # Login Screen
-│   └── Screenshot 2025-12-24 113659.jpg   # Dashboard Screen
-│
-└── README.md
-
+HackOps/
+├── finai-hackops/
+│   ├── frontend/         # React + Vite User Interface
+│   │   ├── src/
+│   │   │   ├── components/  # Atomic UI components
+│   │   │   ├── pages/       # Dashboard, Auth, Budget, etc.
+│   │   │   └── contexts/    # State management (Auth, Theme)
+│   ├── backend/          # FastAPI Python Server
+│   │   ├── app/             # Application logic & routes
+│   │   ├── finai_dev.db     # Local SQLite Database
+│   │   └── init_database.py # Database seeding script
+├── images/               # Project screenshots & assets
+└── README.md             # Project documentation
 ```
 
-## 📸 Screenshots
-
-### 1. Secure Login
-
-*A clean, secure entry point for managing your finances.*
-
-### 2. Dashboard & FinPilot AI
-
-*The central hub where users can view insights and chat with FinPilot for real-time financial advice.*
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-
-* Node.js (v14+)
-* MongoDB
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [Python](https://www.python.org/) (3.9 or higher)
+- [Google Gemini API Key](https://aistudio.google.com/)
 
 ### Installation
 
 1. **Clone the repository**
-```bash
-git clone [https://github.com/vinodhan07/finai-hackops.git](https://github.com/vinodhan07/finai-hackops.git)
-cd finai-hackops
+   ```bash
+   git clone https://github.com/vinodhan07/finai-hackops.git
+   cd finai-hackops/finai-hackops
+   ```
 
-```
+2. **Frontend Setup**
+   ```bash
+   cd frontend
+   npm install
+   # Create a .env file and add:
+   # VITE_API_URL=http://localhost:8000
+   npm run dev
+   ```
 
+3. **Backend Setup**
+   ```bash
+   cd ../backend
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   # Create a .env file and add your GEMINI_API_KEY
+   python init_database.py  # Initialize database
+   uvicorn app.main:app --reload
+   ```
 
-2. **Install Dependencies**
-```bash
-# Install server dependencies
-cd server
-npm install
-
-# Install client dependencies
-cd ../client
-npm install
-
-```
-
-
-3. **Run the App**
-Create a `.env` file in the server directory with your `MONGO_URI` and API keys.
-```bash
-# Start Backend (from server folder)
-npm start
-
-# Start Frontend (from client folder)
-npm start
-
-```
-
-
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please fork the repository and create a pull request.
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-```
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### ⚠️ Double Check
-I used the path `./image/` because you said you added an "image folder".
-* If you named the folder **`images`** (plural), please change the code above from `image` to `images`.
-* If you named the folder **`screenshots`**, change `image` to `screenshots`.
+---
 
-This code assumes you kept the original filenames (`Screenshot 2025...`). If you renamed the files inside GitHub, update the filenames in the code to match.
+## 📄 License
 
-```
+Distributed under the MIT License. See `LICENSE` for more information.
+
+Developed with ❤️ by [Vinodhan](https://github.com/vinodhan07)
+
