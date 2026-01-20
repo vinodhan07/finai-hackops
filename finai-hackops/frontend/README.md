@@ -1,73 +1,68 @@
-# Welcome to your Lovable project
+# FinAI Frontend
 
-## Project info
+This is the frontend application for FinAI, an intelligent financial management platform.
 
-**URL**: https://lovable.dev/projects/e18c0e47-87a6-41ee-b660-1e9c275acdac
+## 🚀 Features
+- **Dashboard**: High-level overview of balances, income, and expenses.
+- **Transactions**: Detailed list and management of all financial movements.
+- **AI Analysis**: Interactive chat and automated insights page.
+- **Budgeting**: Visual indicators for category-wise limits.
+- **Google Sign-In**: Integrated OAuth flow for quick authentication.
 
-## How can I edit this code?
+## 🛠️ Technology Stack
+- **Vite** - Build tool
+- **React** - UI Library
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Utility-first styling
+- **shadcn/ui** - Reusable component library
+- **Radix UI** - Accessible primitives
 
-There are several ways of editing your application.
+## 💻 Development Setup
 
-**Use Lovable**
+Follow these steps to get the frontend application up and running on your local machine:
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e18c0e47-87a6-41ee-b660-1e9c275acdac) and start prompting.
+### 1. Prerequisites
+Before you begin, ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (v18.0.0 or higher)
+- [npm](https://www.npmjs.com/) (usually comes with Node.js)
 
-Changes made via Lovable will be committed automatically to this repo.
+### 2. Installation
+1. **Navigate to the frontend directory** (if you are not already there):
+   ```bash
+   cd frontend
+   ```
+2. **Install the required dependencies**:
+   ```bash
+   npm install
+   ```
+   *This will install all necessary packages including React, Tailwind CSS, and the Google OAuth library.*
 
-**Use your preferred IDE**
+### 3. Configuration (Google Auth)
+To use the Google Sign-In feature, you'll need a Google Client ID:
+1.  Open `src/main.tsx`.
+2.  Locate the `GOOGLE_CLIENT_ID` constant.
+3.  Replace the placeholder with your actual Client ID.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### 4. Running the Development Server
+Start the Vite development server with hot-module replacement (HMR):
+```bash
 npm run dev
 ```
+Once the server starts, you can access the application at:
+- **Local**: [http://localhost:5173/](http://localhost:5173/)
 
-**Edit a file directly in GitHub**
+### 5. Building for Production
+To create an optimized production build:
+```bash
+npm run build
+```
+The output will be generated in the `dist/` directory, ready to be deployed.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🏗️ Structure
+- `src/components`: Reusable UI components.
+- `src/contexts`: Application-level state (Auth, Budget).
+- `src/pages`: Individual view components.
+- `src/services`: API client and data fetching logic.
+- `src/hooks`: Custom React hooks.
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/e18c0e47-87a6-41ee-b660-1e9c275acdac) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+For full project instructions, please refer to the [Root README](../README.md).

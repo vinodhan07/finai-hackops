@@ -21,6 +21,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInWithGoogle: (token: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -105,6 +106,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const signInWithGoogle = async (token: string) => {
+    try {
+      const data = await apiClient.post('/auth/google', { token });
+
+      const newSession = { user: data.user, token: 'dummy-token' };
+      setSession(newSession);
+      setUser(data.user);
+      localStorage.setItem('finai_session', JSON.stringify(newSession));
+
+      toast({
+        title: "Welcome back!",
+        description: "You have been signed in with Google successfully.",
+      });
+
+      return { error: null };
+    } catch (error: any) {
+      toast({
+        title: "Google sign in failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { error };
+    }
+  };
+
   const signOut = async () => {
     setSession(null);
     setUser(null);
@@ -121,6 +147,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loading,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut,
   };
 

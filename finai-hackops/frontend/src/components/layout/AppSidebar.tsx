@@ -11,7 +11,7 @@ import {
   CalendarDays,
   Gauge
 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +23,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
 
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -38,57 +39,77 @@ const items = [
 
 export function AppSidebar() {
   const { state, setOpen } = useSidebar();
+  const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
+  const { user, signOut } = useAuth();
   const collapsed = state === 'collapsed';
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
 
   const isActive = (path: string) => currentPath === path;
 
   return (
     <Sidebar
-      className={`${collapsed ? "w-16" : "w-64"} transition-all duration-300 border-r border-border bg-sidebar`}
       collapsible="icon"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
+      className="border-r border-sidebar-border/50 transition-all duration-300 ease-in-out group"
+      style={{
+        width: collapsed ? "var(--sidebar-width-icon)" : "var(--sidebar-width)"
+      }}
     >
-      <SidebarContent className="p-4">
+      <SidebarContent className="flex flex-col h-full bg-[#0F172A] text-white">
         {/* FinAI Logo */}
-        <div className="mb-8 flex items-center space-x-3">
-          <div className="w-10 h-10 flex items-center justify-center">
+        <div className="p-4 flex items-center gap-3 overflow-hidden h-20">
+          <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white/10 rounded-lg">
             <img
               src="/lovable-uploads/8eaa0ed2-ead7-405f-ba7f-5ddd5ba7e661.png"
               alt="FinAI Logo"
-              className="w-10 h-10 object-contain"
+              className="w-6 h-6 object-contain"
             />
           </div>
           {!collapsed && (
-            <div>
-              <div className="text-lg font-bold text-sidebar-foreground">FinAI</div>
-              <div className="text-xs text-sidebar-foreground/70">Smart Finance</div>
+            <div className="flex flex-col whitespace-nowrap opacity-100 transition-opacity duration-300">
+              <span className="text-lg font-bold tracking-tight">FinAI</span>
+              <span className="text-[10px] uppercase tracking-widest text-slate-400">Secure Assets</span>
             </div>
           )}
         </div>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/80 text-xs uppercase tracking-wider mb-2">
-            {!collapsed && "Main Menu"}
-          </SidebarGroupLabel>
+        <SidebarGroup className="px-2">
+          {!collapsed && (
+            <SidebarGroupLabel className="px-2 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em] mb-4">
+              Core Platform
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="gap-1.5">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
-                        `flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${isActive
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-card"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group/item ${isActive
+                          ? "bg-primary/20 text-primary border-l-2 border-primary"
+                          : "text-slate-300 hover:bg-white/10 hover:text-white"
                         }`
                       }
                     >
-                      <item.icon className="w-5 h-5 transition-transform group-hover:scale-110" />
-                      {!collapsed && <span className="font-medium">{item.title}</span>}
+                      {({ isActive }) => (
+                        <>
+                          <item.icon className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${isActive ? "text-white scale-110" : "text-slate-300 group-hover/item:text-white group-hover/item:scale-110"}`} />
+                          {!collapsed && (
+                            <span className="font-medium text-sm whitespace-nowrap opacity-100 transition-opacity duration-300">
+                              {item.title}
+                            </span>
+                          )}
+                        </>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -98,17 +119,18 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Logout Button */}
-        <div className="mt-auto pt-4">
+        <div className="mt-auto px-2 pb-6">
           <SidebarMenuButton asChild>
             <button
-              className="flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sidebar-foreground hover:bg-destructive/10 hover:text-destructive w-full"
-              onClick={() => {
-                // Handle logout
-                console.log("Logout clicked");
-              }}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-slate-400 hover:bg-destructive/10 hover:text-destructive-foreground w-full"
+              onClick={handleSignOut}
             >
-              <LogOut className="w-5 h-5" />
-              {!collapsed && <span className="font-medium">Logout</span>}
+              <LogOut className="w-5 h-5 flex-shrink-0" />
+              {!collapsed && (
+                <span className="font-medium text-sm whitespace-nowrap opacity-100 transition-opacity duration-300">
+                  Exit System
+                </span>
+              )}
             </button>
           </SidebarMenuButton>
         </div>

@@ -9,11 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Eye, EyeOff, Wallet, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from '@/contexts/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const { user, signIn, signUp, loading: authLoading } = useAuth();
-  
+  const { user, signIn, signUp, signInWithGoogle, loading: authLoading } = useAuth();
+
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -21,7 +22,7 @@ const AuthPage = () => {
     fullName: '',
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -32,61 +33,61 @@ const AuthPage = () => {
   }, [user, navigate]);
 
   const validateForm = (isSignUp: boolean = false) => {
-    const errors: {[key: string]: string} = {};
-    
+    const errors: { [key: string]: string } = {};
+
     if (!formData.email) {
       errors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
     }
-    
+
     if (!formData.password) {
       errors.password = 'Password is required';
     } else if (formData.password.length < 6) {
       errors.password = 'Password must be at least 6 characters';
     }
-    
+
     if (isSignUp && !formData.fullName.trim()) {
       errors.fullName = 'Full name is required';
     }
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     console.log('Starting sign in process for:', formData.email);
     setIsLoading(true);
 
     const { error } = await signIn(formData.email, formData.password);
-    
+
     if (!error) {
       console.log('Sign in successful, redirecting to dashboard');
       navigate('/dashboard');
     }
-    
+
     setIsLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm(true)) return;
-    
+
     console.log('Starting sign up process for:', formData.email);
     setIsLoading(true);
 
     const { error } = await signUp(formData.email, formData.password, formData.fullName);
-    
+
     if (!error) {
       console.log('Sign up successful');
       // Don't navigate immediately as user might need to confirm email
     }
-    
+
     setIsLoading(false);
   };
 
@@ -96,7 +97,7 @@ const AuthPage = () => {
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error when user starts typing
     if (formErrors[name]) {
       setFormErrors(prev => ({
@@ -134,7 +135,7 @@ const AuthPage = () => {
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
@@ -153,7 +154,7 @@ const AuthPage = () => {
                     <p className="text-sm text-destructive">{formErrors.email}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Password</Label>
                   <div className="relative">
@@ -185,17 +186,44 @@ const AuthPage = () => {
                     <p className="text-sm text-destructive">{formErrors.password}</p>
                   )}
                 </div>
-                
-                <Button 
-                  type="submit" 
+
+                <Button
+                  type="submit"
                   className="w-full gradient-primary"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Signing in...' : 'Sign In'}
                 </Button>
+
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-muted" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground italic">Or continue with</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-center w-full">
+                  <GoogleLogin
+                    onSuccess={credentialResponse => {
+                      if (credentialResponse.credential) {
+                        signInWithGoogle(credentialResponse.credential);
+                      }
+                    }}
+                    onError={() => {
+                      console.log('Login Failed');
+                    }}
+                    useOneTap
+                    theme="filled_blue"
+                    shape="pill"
+                    text="continue_with"
+                    width="100%"
+                  />
+                </div>
               </form>
             </TabsContent>
-            
+
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <Alert>
@@ -221,7 +249,7 @@ const AuthPage = () => {
                     <p className="text-sm text-destructive">{formErrors.fullName}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <Input
@@ -238,7 +266,7 @@ const AuthPage = () => {
                     <p className="text-sm text-destructive">{formErrors.email}</p>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
                   <div className="relative">
@@ -270,14 +298,41 @@ const AuthPage = () => {
                     <p className="text-sm text-destructive">{formErrors.password}</p>
                   )}
                 </div>
-                
-                <Button 
-                  type="submit" 
+
+                <Button
+                  type="submit"
                   className="w-full gradient-primary"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Creating account...' : 'Create Account'}
                 </Button>
+
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-muted" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground italic">Or continue with</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-center w-full">
+                  <GoogleLogin
+                    onSuccess={credentialResponse => {
+                      if (credentialResponse.credential) {
+                        signInWithGoogle(credentialResponse.credential);
+                      }
+                    }}
+                    onError={() => {
+                      console.log('Login Failed');
+                    }}
+                    useOneTap
+                    theme="filled_blue"
+                    shape="pill"
+                    text="signup_with"
+                    width="100%"
+                  />
+                </div>
               </form>
             </TabsContent>
           </Tabs>
