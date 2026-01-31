@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -87,6 +88,30 @@ const dummyTransactions = [
 const categories = ["All", "Income", "Food", "Travel", "Shopping", "Bills", "Entertainment"];
 const modes = ["All", "UPI", "Card", "Bank Transfer"];
 
+import { motion, AnimatePresence, Variants } from "framer-motion";
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100
+    }
+  }
+};
+
 const Transactions = () => {
   const { transactions, getTotalIncome, getTotalSpent } = useBudget();
   const location = useLocation();
@@ -111,7 +136,7 @@ const Transactions = () => {
     const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === "All" || transaction.category === selectedCategory;
     const matchesMode = selectedMode === "All" || transaction.mode === selectedMode;
-    
+
     return matchesSearch && matchesCategory && matchesMode;
   });
 
@@ -167,8 +192,13 @@ const Transactions = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6 pb-20"
+      >
+        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Transactions</h1>
             <p className="text-muted-foreground">Track and manage all your financial transactions</p>
@@ -177,7 +207,7 @@ const Transactions = () => {
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
-        </div>
+        </motion.div>
 
         {/* Savings Goal Filter Alert */}
         {savingsGoalFilter && (
@@ -202,50 +232,52 @@ const Transactions = () => {
         )}
 
         {/* Filters */}
-        <Card className="gradient-card shadow-card border-0">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Search transactions..."
-                  className="pl-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <motion.div variants={itemVariants}>
+          <Card className="gradient-card shadow-card border-0">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search transactions..."
+                    className="pl-10"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
 
-              <Select value={selectedMode} onValueChange={setSelectedMode}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Payment Mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  {modes.map((mode) => (
-                    <SelectItem key={mode} value={mode}>
-                      {mode}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={selectedMode} onValueChange={setSelectedMode}>
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue placeholder="Payment Mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {modes.map((mode) => (
+                      <SelectItem key={mode} value={mode}>
+                        {mode}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
 
         {/* Transaction Summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           <Card className="gradient-card shadow-card border-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-card-foreground">Total Income</CardTitle>
@@ -284,58 +316,59 @@ const Transactions = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
 
         {/* Transactions Table */}
-        <Card className="gradient-card shadow-card border-0">
-          <CardHeader>
-            <CardTitle className="text-card-foreground">Recent Transactions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {filteredTransactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors gap-3"
-                >
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-muted flex items-center justify-center text-lg sm:text-xl flex-shrink-0">
-                      {getModeIcon(transaction.mode)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-card-foreground truncate">{transaction.description}</p>
-                      <div className="flex flex-wrap items-center gap-2 mt-1">
-                        <span className="text-xs sm:text-sm text-muted-foreground">{transaction.date}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${getCategoryColor(transaction.category)}`}>
-                          {transaction.category}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{transaction.mode}</span>
+        <motion.div variants={itemVariants}>
+          <Card className="gradient-card shadow-card border-0">
+            <CardHeader>
+              <CardTitle className="text-card-foreground">Recent Transactions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {filteredTransactions.map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors gap-3"
+                  >
+                    <div className="flex items-center space-x-3 sm:space-x-4">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-muted flex items-center justify-center text-lg sm:text-xl flex-shrink-0">
+                        {getModeIcon(transaction.mode)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-card-foreground truncate">{transaction.description}</p>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <span className="text-xs sm:text-sm text-muted-foreground">{transaction.date}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${getCategoryColor(transaction.category)}`}>
+                            {transaction.category}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{transaction.mode}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="text-right sm:ml-4 flex-shrink-0">
-                    <p className={`font-bold text-base sm:text-lg ${
-                      transaction.amount > 0 ? 'text-income' : 'text-expense'
-                    }`}>
-                      {transaction.amount > 0 ? '+' : ''}₹{Math.abs(transaction.amount).toLocaleString()}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {transaction.amount > 0 ? 'Credit' : 'Debit'}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
 
-            {filteredTransactions.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">No transactions found matching your filters.</p>
+                    <div className="text-right sm:ml-4 flex-shrink-0">
+                      <p className={`font-bold text-base sm:text-lg ${transaction.amount > 0 ? 'text-income' : 'text-expense'
+                        }`}>
+                        {transaction.amount > 0 ? '+' : ''}₹{Math.abs(transaction.amount).toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {transaction.amount > 0 ? 'Credit' : 'Debit'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+
+              {filteredTransactions.length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">No transactions found matching your filters.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
     </Layout>
   );
 };

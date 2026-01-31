@@ -21,6 +21,7 @@ import { useState, useEffect } from "react";
 import { apiClient } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 
 const containerVariants: Variants = {
@@ -141,7 +142,12 @@ const Dashboard = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6 pb-20"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
@@ -269,123 +275,131 @@ const Dashboard = () => {
           </motion.div>
         </motion.div>
 
-        {/* FinPilot AI Assistant */}
-        <Card className="gradient-card shadow-card border-0">
-          <CardHeader>
-            <CardTitle className="text-card-foreground flex items-center">
-              <Bot className="w-6 h-6 mr-2 text-primary" />
-              FinPilot – AI Financial Assistant
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Chat Messages */}
-            <div className="h-64 sm:h-80 md:h-96 overflow-y-auto space-y-4 p-3 md:p-4 bg-muted/20 rounded-lg flex flex-col">
-              <AnimatePresence initial={false}>
-                {messages.map((msg, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
-                  >
-                    <div className={`flex max-w-[80%] ${msg.type === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-2`}>
-                      {msg.type === 'bot' && (
-                        <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center flex-shrink-0">
-                          <Bot className="w-4 h-4 text-primary-foreground" />
+        {/* FinPilot AI Assistant & Upcoming Bills */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <motion.div variants={itemVariants} className="lg:col-span-2">
+            <Card className="gradient-card shadow-card border-0 h-full flex flex-col min-h-[500px]">
+              <CardHeader>
+                <CardTitle className="text-card-foreground flex items-center">
+                  <Bot className="w-6 h-6 mr-2 text-primary" />
+                  FinPilot – AI Financial Assistant
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col space-y-4">
+                {/* Chat Messages */}
+                <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-muted/20 rounded-lg min-h-[300px]">
+                  <AnimatePresence initial={false}>
+                    {messages.map((msg, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+                      >
+                        <div className={`flex max-w-[85%] ${msg.type === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-3`}>
+                          {msg.type === 'bot' && (
+                            <div className="w-8 h-8 rounded-full gradient-primary flex items-center justify-center flex-shrink-0">
+                              <Bot className="w-4 h-4 text-primary-foreground" />
+                            </div>
+                          )}
+                          <div className={`p-3 rounded-2xl shadow-sm ${msg.type === 'user'
+                            ? 'bg-primary text-primary-foreground rounded-br-sm'
+                            : 'bg-card text-card-foreground rounded-bl-sm border border-border/50'
+                            }`}>
+                            {msg.type === 'bot' ? (
+                              <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-muted/50">
+                                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                              </div>
+                            ) : (
+                              msg.content
+                            )}
+                          </div>
                         </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+
+                {/* Input Section */}
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Ask about your finances, investments, or expenses…"
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={isLoading}
+                      className="gradient-primary shadow-glow"
+                      size="icon"
+                    >
+                      {isLoading ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
                       )}
-                      <div className={`p-3 rounded-2xl shadow-sm ${msg.type === 'user'
-                        ? 'bg-primary text-primary-foreground rounded-br-sm'
-                        : 'bg-card text-card-foreground rounded-bl-sm border border-border/50'
-                        }`}>
-                        {msg.content}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-
-            {/* Input Section */}
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Input
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Ask about your finances, investments, or expenses…"
-                  className="flex-1"
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={isLoading}
-                  className="gradient-primary shadow-glow"
-                  size="icon"
-                >
-                  {isLoading ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-sm text-muted-foreground text-center">
-                Try: "Analyze my food expenses from 2025-01-01 to 2025-01-31" or "What did I spend on transportation last week?"
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Upcoming Alerts */}
-        <Card className="gradient-card shadow-card border-0">
-          <CardHeader>
-            <CardTitle className="text-card-foreground flex items-center">
-              <Bell className="w-5 h-5 mr-2 text-budget-warning" />
-              Upcoming Bills
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {upcomingBills.length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-muted-foreground">No upcoming bills in the next 30 days</p>
-              </div>
-            ) : (
-              upcomingBills.map((bill) => {
-                const today = new Date();
-                const due = new Date(bill.due_date);
-                const daysUntilDue = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-                const getBgColor = () => {
-                  if (daysUntilDue <= 3) return 'bg-warning-light';
-                  return 'bg-muted';
-                };
-
-                const getTextColor = () => {
-                  if (daysUntilDue <= 3) return 'text-warning';
-                  return 'text-card-foreground';
-                };
-
-                const getDueDateText = () => {
-                  if (daysUntilDue === 0) return 'Due today';
-                  if (daysUntilDue === 1) return 'Due tomorrow';
-                  return `Due in ${daysUntilDue} days`;
-                };
-
-                return (
-                  <div key={bill.id} className={`flex items-center justify-between p-3 rounded-lg ${getBgColor()}`}>
-                    <div>
-                      <p className="font-medium text-card-foreground">{bill.title}</p>
-                      <p className="text-sm text-muted-foreground">{getDueDateText()}</p>
-                    </div>
-                    <p className={`font-bold ${getTextColor()}`}>₹{bill.amount.toLocaleString()}</p>
+                    </Button>
                   </div>
-                );
-              })
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Try: "What is my salary plan?" or "Analyze my spending patterns"
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="lg:col-span-1">
+            <Card className="gradient-card shadow-card border-0 h-full">
+              <CardHeader>
+                <CardTitle className="text-card-foreground flex items-center">
+                  <Bell className="w-5 h-5 mr-2 text-budget-warning" />
+                  Upcoming Bills
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {upcomingBills.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground italic">No upcoming bills found.</p>
+                  </div>
+                ) : (
+                  upcomingBills.map((bill) => {
+                    const today = new Date();
+                    const due = new Date(bill.due_date);
+                    const daysUntilDue = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+                    const getBgColor = () => {
+                      if (daysUntilDue <= 3) return 'bg-warning-light/50';
+                      return 'bg-muted/30';
+                    };
+
+                    const getTextColor = () => {
+                      if (daysUntilDue <= 3) return 'text-warning';
+                      return 'text-card-foreground';
+                    };
+
+                    return (
+                      <div key={bill.id} className={`flex items-center justify-between p-4 rounded-xl ${getBgColor()} hover-scale`}>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-card-foreground">{bill.title}</p>
+                          <p className="text-xs text-muted-foreground italic">Due {bill.due_date}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={`font-bold ${getTextColor()}`}>₹{bill.amount.toLocaleString()}</p>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Due in {daysUntilDue} days</p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </motion.div>
     </Layout>
   );
 };

@@ -10,23 +10,51 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBudget } from "@/contexts/BudgetContext";
+import { apiClient } from "@/services/api";
+import { Loader2 } from "lucide-react";
+
+import { motion, AnimatePresence, Variants } from "framer-motion";
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100
+    }
+  }
+};
 
 const Budget = () => {
-  const { 
-    budgets, 
-    income, 
-    addIncome, 
-    addBudget, 
-    getTotalBudget, 
-    getTotalSpent, 
+  const {
+    budgets,
+    income,
+    addIncome,
+    addBudget,
+    getTotalBudget,
+    getTotalSpent,
     getTotalIncome,
-    getCurrentBalance 
+    getCurrentBalance
   } = useBudget();
-  
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isIncomeDialogOpen, setIsIncomeDialogOpen] = useState(false);
   const [isBudgetInfoDialogOpen, setIsBudgetInfoDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [aiAdvice, setAiAdvice] = useState<string | null>(null);
+  const [isLoadingAdvice, setIsLoadingAdvice] = useState(false);
   const [newBudget, setNewBudget] = useState({
     name: "",
     budget: "",
@@ -78,15 +106,42 @@ const Budget = () => {
     }
   };
 
+  const fetchAIAdvice = async () => {
+    setIsLoadingAdvice(true);
+    try {
+      const expenses: Record<string, number> = {};
+      budgets.forEach(b => {
+        expenses[b.name] = b.budget;
+      });
+
+      const response = await apiClient.post('/analysis/salary-plan', {
+        income: getTotalIncome(),
+        expenses: expenses
+      });
+
+      setAiAdvice(response.advice || response); // Handle both plain string and object response
+    } catch (error) {
+      console.error("Failed to fetch AI advice:", error);
+      setAiAdvice("Failed to load AI recommendations. Please try again later.");
+    } finally {
+      setIsLoadingAdvice(false);
+    }
+  };
+
   return (
     <Layout>
-      <div className="space-y-6">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="space-y-6 pb-20"
+      >
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Budget Management</h1>
             <p className="text-muted-foreground">Set and track your monthly spending limits</p>
           </div>
-          
+
           <div className="flex gap-3">
             <Dialog open={isIncomeDialogOpen} onOpenChange={setIsIncomeDialogOpen}>
               <DialogTrigger asChild>
@@ -193,53 +248,53 @@ const Budget = () => {
                   Add Budget
                 </Button>
               </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add New Budget Category</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="category-name">Category Name</Label>
-                  <Input
-                    id="category-name"
-                    placeholder="e.g., Groceries"
-                    value={newBudget.name}
-                    onChange={(e) => setNewBudget({ ...newBudget, name: e.target.value })}
-                  />
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Budget Category</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="category-name">Category Name</Label>
+                    <Input
+                      id="category-name"
+                      placeholder="e.g., Groceries"
+                      value={newBudget.name}
+                      onChange={(e) => setNewBudget({ ...newBudget, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="budget-amount">Monthly Budget (₹)</Label>
+                    <Input
+                      id="budget-amount"
+                      type="number"
+                      placeholder="5000"
+                      value={newBudget.budget}
+                      onChange={(e) => setNewBudget({ ...newBudget, budget: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="category-icon">Icon</Label>
+                    <Select value={newBudget.icon} onValueChange={(value) => setNewBudget({ ...newBudget, icon: value })}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="💰">💰 Money</SelectItem>
+                        <SelectItem value="🍽️">🍽️ Food</SelectItem>
+                        <SelectItem value="🚗">🚗 Transport</SelectItem>
+                        <SelectItem value="🛍️">🛍️ Shopping</SelectItem>
+                        <SelectItem value="🎬">🎬 Entertainment</SelectItem>
+                        <SelectItem value="🏥">🏥 Healthcare</SelectItem>
+                        <SelectItem value="📚">📚 Education</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={handleAddBudget} className="w-full gradient-primary">
+                    Add Budget Category
+                  </Button>
                 </div>
-                <div>
-                  <Label htmlFor="budget-amount">Monthly Budget (₹)</Label>
-                  <Input
-                    id="budget-amount"
-                    type="number"
-                    placeholder="5000"
-                    value={newBudget.budget}
-                    onChange={(e) => setNewBudget({ ...newBudget, budget: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="category-icon">Icon</Label>
-                  <Select value={newBudget.icon} onValueChange={(value) => setNewBudget({ ...newBudget, icon: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="💰">💰 Money</SelectItem>
-                      <SelectItem value="🍽️">🍽️ Food</SelectItem>
-                      <SelectItem value="🚗">🚗 Transport</SelectItem>
-                      <SelectItem value="🛍️">🛍️ Shopping</SelectItem>
-                      <SelectItem value="🎬">🎬 Entertainment</SelectItem>
-                      <SelectItem value="🏥">🏥 Healthcare</SelectItem>
-                      <SelectItem value="📚">📚 Education</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button onClick={handleAddBudget} className="w-full gradient-primary">
-                  Add Budget Category
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -251,169 +306,186 @@ const Budget = () => {
 
           <TabsContent value="overview" className="space-y-6">
 
-        {/* Income Sources */}
-        {income.length > 0 && (
-          <Card className="gradient-card shadow-card border-0">
-            <CardHeader>
-              <CardTitle className="text-card-foreground flex items-center">
-                <Wallet className="w-5 h-5 mr-2 text-income" />
-                Income Sources
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {income.map((source) => (
-                  <div key={source.id} className="flex items-center justify-between p-3 rounded-lg bg-income/10 border border-income/20">
-                    <div>
-                      <p className="font-medium text-card-foreground">{source.name}</p>
-                      <p className="text-sm text-muted-foreground">{new Date(source.date).toLocaleDateString()}</p>
-                    </div>
-                    <p className="font-bold text-income">₹{source.amount.toLocaleString()}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 p-3 rounded-lg bg-income/5 border border-income/10">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-card-foreground">Total Income</span>
-                  <span className="text-xl font-bold text-income">₹{getTotalIncome().toLocaleString()}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Budget Overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          <Card className="gradient-card shadow-card border-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-card-foreground">Total Budget</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl md:text-2xl font-bold text-card-foreground">₹{totalBudget.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Monthly allocation</p>
-            </CardContent>
-          </Card>
-
-          <Card className="gradient-card shadow-card border-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-card-foreground">Total Spent</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl md:text-2xl font-bold text-expense">₹{totalSpent.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">
-                {totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(1) : '0.0'}% of budget used
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="gradient-card shadow-card border-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-card-foreground">Remaining</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-xl md:text-2xl font-bold ${remainingBudget >= 0 ? 'text-income' : 'text-expense'}`}>
-                ₹{Math.abs(remainingBudget).toLocaleString()}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {remainingBudget >= 0 ? 'Left to spend' : 'Over budget'}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Budget Categories */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          {budgets.map((category) => {
-            const percentage = (category.spent / category.budget) * 100;
-            const status = getBudgetStatus(category.spent, category.budget);
-            const StatusIcon = status.icon;
-
-            return (
-              <Card key={category.id} className="gradient-card shadow-card border-0">
+            {/* Income Sources */}
+            {income.length > 0 && (
+              <Card className="gradient-card shadow-card border-0">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="text-2xl">{category.icon}</div>
-                      <div>
-                        <CardTitle className="text-lg text-card-foreground">{category.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          ₹{category.spent.toLocaleString()} / ₹{category.budget.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                    <StatusIcon className={`w-5 h-5 text-${status.color}`} />
-                  </div>
+                  <CardTitle className="text-card-foreground flex items-center">
+                    <Wallet className="w-5 h-5 mr-2 text-income" />
+                    Income Sources
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <Progress value={Math.min(percentage, 100)} className="h-3" />
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">
-                      {percentage.toFixed(1)}% used
-                    </span>
-                    <span className={`text-sm font-medium ${
-                      percentage >= 100 ? 'text-budget-danger' : 
-                      percentage >= 80 ? 'text-budget-warning' : 'text-budget-good'
-                    }`}>
-                      {percentage >= 100 && (
-                        <div className="flex items-center">
-                          <TrendingDown className="w-4 h-4 mr-1" />
-                          Over by ₹{(category.spent - category.budget).toLocaleString()}
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {income.map((source) => (
+                      <div key={source.id} className="flex items-center justify-between p-3 rounded-lg bg-income/10 border border-income/20">
+                        <div>
+                          <p className="font-medium text-card-foreground">{source.name}</p>
+                          <p className="text-sm text-muted-foreground">{new Date(source.date).toLocaleDateString()}</p>
                         </div>
-                      )}
-                      {percentage < 100 && (
-                        <div>₹{(category.budget - category.spent).toLocaleString()} remaining</div>
-                      )}
-                    </span>
+                        <p className="font-bold text-income">₹{source.amount.toLocaleString()}</p>
+                      </div>
+                    ))}
                   </div>
-
-                  {/* Status Message */}
-                  <div className={`p-3 rounded-lg text-sm ${
-                    status.status === 'exceeded' ? 'bg-destructive/10 text-destructive' :
-                    status.status === 'warning' ? 'bg-warning-light text-warning' :
-                    'bg-success-light text-success'
-                  }`}>
-                    {status.status === 'exceeded' && '⚠️ Budget exceeded! Consider reducing spending in this category.'}
-                    {status.status === 'warning' && '🔔 You\'re approaching your budget limit. Monitor spending carefully.'}
-                    {status.status === 'good' && '✅ Great job! You\'re staying within your budget.'}
+                  <div className="mt-4 p-3 rounded-lg bg-income/5 border border-income/10">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium text-card-foreground">Total Income</span>
+                      <span className="text-xl font-bold text-income">₹{getTotalIncome().toLocaleString()}</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            );
-          })}
-        </div>
+            )}
 
-        {/* Budget Tips */}
-        <Card className="gradient-card shadow-card border-0">
-          <CardHeader>
-            <CardTitle className="text-card-foreground flex items-center">
-              <Target className="w-5 h-5 mr-2 text-accent-vivid" />
-              Budget Tips & Recommendations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <h4 className="font-semibold text-card-foreground">Smart Budgeting Tips</h4>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Follow the 50/30/20 rule: 50% needs, 30% wants, 20% savings</li>
-                  <li>• Review and adjust budgets monthly based on spending patterns</li>
-                  <li>• Set up automatic alerts when you reach 80% of any budget</li>
-                  <li>• Use the envelope method for variable expenses</li>
-                </ul>
-              </div>
-              <div className="space-y-3">
-                <h4 className="font-semibold text-card-foreground">AI Recommendations</h4>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• Consider reducing dining out budget by ₹1,000</li>
-                  <li>• Your transportation spending is optimal for your income</li>
-                  <li>• Increase healthcare budget by ₹500 for better coverage</li>
-                  <li>• Entertainment spending is well balanced</li>
-                </ul>
-              </div>
+            {/* Budget Overview */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <Card className="gradient-card shadow-card border-0">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-card-foreground">Total Budget</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl md:text-2xl font-bold text-card-foreground">₹{totalBudget.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">Monthly allocation</p>
+                </CardContent>
+              </Card>
+
+              <Card className="gradient-card shadow-card border-0">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-card-foreground">Total Spent</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl md:text-2xl font-bold text-expense">₹{totalSpent.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {totalBudget > 0 ? ((totalSpent / totalBudget) * 100).toFixed(1) : '0.0'}% of budget used
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="gradient-card shadow-card border-0">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-card-foreground">Remaining</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-xl md:text-2xl font-bold ${remainingBudget >= 0 ? 'text-income' : 'text-expense'}`}>
+                    ₹{Math.abs(remainingBudget).toLocaleString()}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {remainingBudget >= 0 ? 'Left to spend' : 'Over budget'}
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Budget Categories */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+              {budgets.map((category) => {
+                const percentage = (category.spent / category.budget) * 100;
+                const status = getBudgetStatus(category.spent, category.budget);
+                const StatusIcon = status.icon;
+
+                return (
+                  <Card key={category.id} className="gradient-card shadow-card border-0">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="text-2xl">{category.icon}</div>
+                          <div>
+                            <CardTitle className="text-lg text-card-foreground">{category.name}</CardTitle>
+                            <p className="text-sm text-muted-foreground">
+                              ₹{category.spent.toLocaleString()} / ₹{category.budget.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <StatusIcon className={`w-5 h-5 text-${status.color}`} />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <Progress value={Math.min(percentage, 100)} className="h-3" />
+
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">
+                          {percentage.toFixed(1)}% used
+                        </span>
+                        <span className={`text-sm font-medium ${percentage >= 100 ? 'text-budget-danger' :
+                          percentage >= 80 ? 'text-budget-warning' : 'text-budget-good'
+                          }`}>
+                          {percentage >= 100 && (
+                            <div className="flex items-center">
+                              <TrendingDown className="w-4 h-4 mr-1" />
+                              Over by ₹{(category.spent - category.budget).toLocaleString()}
+                            </div>
+                          )}
+                          {percentage < 100 && (
+                            <div>₹{(category.budget - category.spent).toLocaleString()} remaining</div>
+                          )}
+                        </span>
+                      </div>
+
+                      {/* Status Message */}
+                      <div className={`p-3 rounded-lg text-sm ${status.status === 'exceeded' ? 'bg-destructive/10 text-destructive' :
+                        status.status === 'warning' ? 'bg-warning-light text-warning' :
+                          'bg-success-light text-success'
+                        }`}>
+                        {status.status === 'exceeded' && '⚠️ Budget exceeded! Consider reducing spending in this category.'}
+                        {status.status === 'warning' && '🔔 You\'re approaching your budget limit. Monitor spending carefully.'}
+                        {status.status === 'good' && '✅ Great job! You\'re staying within your budget.'}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Budget Tips */}
+            <Card className="gradient-card shadow-card border-0">
+              <CardHeader>
+                <CardTitle className="text-card-foreground flex items-center">
+                  <Target className="w-5 h-5 mr-2 text-accent-vivid" />
+                  Budget Tips & Recommendations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-card-foreground">Smart Budgeting Tips</h4>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li>• Follow the 50/30/20 rule: 50% needs, 30% wants, 20% savings</li>
+                      <li>• Review and adjust budgets monthly based on spending patterns</li>
+                      <li>• Set up automatic alerts when you reach 80% of any budget</li>
+                      <li>• Use the envelope method for variable expenses</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-card-foreground">AI Recommendations</h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 text-xs text-accent"
+                        onClick={fetchAIAdvice}
+                        disabled={isLoadingAdvice}
+                      >
+                        {isLoadingAdvice ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Calculator className="w-3 h-3 mr-1" />}
+                        Refresh
+                      </Button>
+                    </div>
+                    {aiAdvice ? (
+                      <div className="p-3 bg-accent/5 rounded-lg border border-accent/20">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {aiAdvice}
+                        </p>
+                      </div>
+                    ) : (
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li>• Click Refresh to get personalized AI advice</li>
+                        <li>• Our local ML model analyzes your budget and income</li>
+                        <li>• Get recommendations on savings and spending habits</li>
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="info" className="space-y-6">
@@ -442,7 +514,7 @@ const Budget = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="p-3 bg-muted rounded-lg">
                         <p className="text-sm text-muted-foreground">Actual Budget</p>
@@ -469,7 +541,7 @@ const Budget = () => {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+      </motion.div>
     </Layout>
   );
 };

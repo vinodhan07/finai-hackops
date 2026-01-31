@@ -4,7 +4,7 @@ import uvicorn
 import os
 from dotenv import load_dotenv
 
-from .api import auth, transactions, analysis
+from .api import auth, transactions, analysis, budgets
 
 load_dotenv()
 
@@ -23,6 +23,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(transactions.router, prefix="/api/transactions", tags=["Transactions"])
 app.include_router(analysis.router, prefix="/api/analysis", tags=["AI Analysis"])
+app.include_router(budgets.router, prefix="/api/budgets", tags=["Budgets"])
 
 @app.get("/")
 async def root():

@@ -70,13 +70,33 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!user) return;
 
     try {
-      // Load transactions (most of the data is derived from here in this simplified version)
+      // Load transactions
       const transactionData = await apiClient.get(`/transactions/${user.id}`);
       setTransactions(transactionData);
 
-      // Note: In the new SQLite schema, we have separate tables for budgets and income
-      // For now, I'll fetch them if I implement those endpoints, or keep placeholders
-      // For this migration, I'll focus on transactions as they are the core.
+      // Load budgets
+      const budgetData = await apiClient.get(`/budgets/${user.id}`);
+      const mappedBudgets = budgetData.map((b: any) => ({
+        id: b.id,
+        name: b.category,
+        budget: b.budget_amount,
+        spent: b.spent_amount,
+        color: "hsl(var(--primary))", // Default color
+        icon: "💰" // Default icon, could be improved with mapping
+      }));
+      setBudgets(mappedBudgets);
+
+      // Populate income state from transactions
+      const incomeSources = transactionData
+        .filter((t: any) => t.transaction_type === 'income')
+        .map((t: any) => ({
+          id: t.id,
+          name: t.category, // Category used as source name in addIncome
+          amount: t.amount,
+          date: t.transaction_date
+        }));
+      setIncome(incomeSources);
+
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -90,9 +110,10 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     try {
       await apiClient.post('/transactions/', {
-        ...newIncome,
         user_id: user.id,
         transaction_type: 'income',
+        amount: Number(newIncome.amount),
+        category: newIncome.name, // Mapping 'name' from UI to 'category' in backend
         description: `${newIncome.name} Credit`,
         transaction_date: newIncome.date,
       });
@@ -106,9 +127,19 @@ export const BudgetProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const addBudget = async (newBudget: Omit<BudgetCategory, 'id' | 'spent'>) => {
-    // Placeholder: Budget table exists but endpoint needs implementation
-    // For now, let's just simulate or add a simple POST
-    toast.info('Budget management will be fully enabled soon');
+    if (!user) return;
+    try {
+      await apiClient.post('/budgets/', {
+        user_id: user.id,
+        category: newBudget.name,
+        budget_amount: newBudget.budget
+      });
+      toast.success('Budget updated successfully!');
+      await loadData();
+    } catch (error) {
+      console.error('Error adding budget:', error);
+      toast.error('Failed to update budget');
+    }
   };
 
   const processPayment = async (payment: { amount: number; description: string; category: string; merchant: string }) => {

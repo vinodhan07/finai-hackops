@@ -160,8 +160,12 @@ All colors MUST be HSL for theme switching support.
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground font-inter antialiased;
+    @apply bg-background text-foreground font-inter antialiased transition-colors duration-300;
   }
   
   /* Financial Dashboard Utilities */
