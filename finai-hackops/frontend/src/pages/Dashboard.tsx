@@ -287,15 +287,16 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="flex-1 flex flex-col space-y-4">
                 {/* Chat Messages */}
-                <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-muted/20 rounded-lg min-h-[300px]">
+                <div className="flex-1 overflow-y-auto flex flex-col gap-4 p-4 bg-muted/20 rounded-lg min-h-[300px] overflow-x-hidden">
                   <AnimatePresence initial={false}>
                     {messages.map((msg, index) => (
                       <motion.div
+                        layout
                         key={index}
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'} mb-4`}
+                        className={`flex w-full ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
                         <div className={`flex max-w-[85%] ${msg.type === 'user' ? 'flex-row-reverse' : 'flex-row'} gap-3`}>
                           {msg.type === 'bot' && (
@@ -303,16 +304,16 @@ const Dashboard = () => {
                               <Bot className="w-4 h-4 text-primary-foreground" />
                             </div>
                           )}
-                          <div className={`p-3 rounded-2xl shadow-sm ${msg.type === 'user'
+                          <div className={`p-3 rounded-2xl shadow-sm overflow-hidden ${msg.type === 'user'
                             ? 'bg-primary text-primary-foreground rounded-br-sm'
                             : 'bg-card text-card-foreground rounded-bl-sm border border-border/50'
                             }`}>
                             {msg.type === 'bot' ? (
-                              <div className="prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-muted/50">
+                              <div className="prose prose-sm prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-muted/50 prose-headings:mt-0">
                                 <ReactMarkdown>{msg.content}</ReactMarkdown>
                               </div>
                             ) : (
-                              msg.content
+                              <div className="whitespace-pre-wrap break-words">{msg.content}</div>
                             )}
                           </div>
                         </div>

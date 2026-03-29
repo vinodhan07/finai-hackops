@@ -64,7 +64,7 @@ export function AppSidebar() {
     >
       <SidebarContent className="flex flex-col h-full bg-background text-foreground border-r border-border/50">
         {/* FinAI Logo */}
-        <div className="px-4 flex items-center gap-3 overflow-hidden h-14 border-b border-sidebar-border/50 shrink-0">
+        <div className={`flex items-center overflow-hidden h-14 border-b border-sidebar-border/50 shrink-0 transition-all duration-300 ${collapsed ? 'justify-center w-full' : 'px-4 gap-3'}`}>
           <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-accent/10 rounded-sm border border-accent/20">
             <img
               src="/lovable-uploads/8eaa0ed2-ead7-405f-ba7f-5ddd5ba7e661.png"
