@@ -226,7 +226,6 @@ const AuthPage = () => {
                       theme="filled_black"
                       shape="rectangular"
                       text="continue_with"
-                      width="100%"
                     />
                   </div>
                 </form>
@@ -338,7 +337,6 @@ const AuthPage = () => {
                       theme="filled_black"
                       shape="rectangular"
                       text="signup_with"
-                      width="100%"
                     />
                   </div>
                 </form>
