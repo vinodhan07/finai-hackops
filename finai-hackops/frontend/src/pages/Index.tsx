@@ -30,13 +30,14 @@ const Index = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center space-y-8">
           <div className="space-y-4">
-            <div className="mx-auto w-20 h-20 rounded-full bg-primary flex items-center justify-center">
+            <div className="mx-auto w-20 h-20 rounded-none bg-primary flex items-center justify-center">
               <Wallet className="w-10 h-10 text-primary-foreground" />
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-foreground">
-              Welcome to <span className="text-primary">FinAI</span>
+            <h1 className="text-4xl md:text-6xl font-serif font-bold text-foreground tracking-tight flex flex-col items-center gap-2">
+              <span>Welcome to</span>
+              <span className="text-accent italic text-5xl md:text-7xl">FinAI</span>
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto pt-4">
               Your intelligent financial companion for budgeting, expense tracking, and smart money management.
             </p>
           </div>
@@ -62,17 +63,17 @@ const Index = () => {
 
         {/* Features Section */}
         <div className="mt-24">
-          <h2 className="text-3xl font-bold text-center text-foreground mb-12">
+          <h2 className="text-3xl font-serif font-bold text-center text-foreground mb-12 tracking-tight">
             Why Choose FinAI?
           </h2>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            <Card className="gradient-card shadow-card border-0">
+            <Card className="bg-card shadow-card border border-border/50 rounded-none">
               <CardHeader className="text-center">
-                <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <div className="mx-auto w-12 h-12 rounded-none bg-primary/10 flex items-center justify-center mb-4">
                   <Shield className="w-6 h-6 text-primary" />
                 </div>
-                <CardTitle className="text-card-foreground">Secure & Private</CardTitle>
+                <CardTitle className="text-card-foreground font-serif text-xl">Secure & Private</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-center">
@@ -81,12 +82,12 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="gradient-card shadow-card border-0">
+            <Card className="bg-card shadow-card border border-border/50 rounded-none">
               <CardHeader className="text-center">
-                <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <div className="mx-auto w-12 h-12 rounded-none bg-primary/10 flex items-center justify-center mb-4">
                   <Zap className="w-6 h-6 text-primary" />
                 </div>
-                <CardTitle className="text-card-foreground">AI-Powered Insights</CardTitle>
+                <CardTitle className="text-card-foreground font-serif text-xl">AI-Powered Insights</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-center">
@@ -95,12 +96,12 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="gradient-card shadow-card border-0">
+            <Card className="bg-card shadow-card border border-border/50 rounded-none">
               <CardHeader className="text-center">
-                <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <div className="mx-auto w-12 h-12 rounded-none bg-primary/10 flex items-center justify-center mb-4">
                   <Users className="w-6 h-6 text-primary" />
                 </div>
-                <CardTitle className="text-card-foreground">Multi-Tenant</CardTitle>
+                <CardTitle className="text-card-foreground font-serif text-xl">Multi-Tenant</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground text-center">

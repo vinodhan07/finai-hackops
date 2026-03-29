@@ -62,58 +62,59 @@ export function AppSidebar() {
         width: collapsed ? "var(--sidebar-width-icon)" : "var(--sidebar-width)"
       }}
     >
-      <SidebarContent className="flex flex-col h-full bg-[#0F172A] text-white">
+      <SidebarContent className="flex flex-col h-full bg-background text-foreground border-r border-border/50">
         {/* FinAI Logo */}
-        <div className="p-4 flex items-center gap-3 overflow-hidden h-20">
-          <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white/10 rounded-lg">
+        <div className="px-4 flex items-center gap-3 overflow-hidden h-14 border-b border-sidebar-border/50 shrink-0">
+          <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-accent/10 rounded-sm border border-accent/20">
             <img
               src="/lovable-uploads/8eaa0ed2-ead7-405f-ba7f-5ddd5ba7e661.png"
               alt="FinAI Logo"
-              className="w-6 h-6 object-contain"
+              className="w-5 h-5 object-contain grayscale opacity-90"
             />
           </div>
           {!collapsed && (
-            <div className="flex flex-col whitespace-nowrap opacity-100 transition-opacity duration-300">
-              <span className="text-lg font-bold tracking-tight">FinAI</span>
-              <span className="text-[10px] uppercase tracking-widest text-slate-400">Secure Assets</span>
+            <div className="flex flex-col whitespace-nowrap opacity-100 transition-opacity duration-300 justify-center">
+              <span className="text-xl font-serif font-bold tracking-tight text-accent leading-none">FinAI</span>
+              <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground mt-1 leading-none">Premium Wealth</span>
             </div>
           )}
         </div>
 
         <SidebarGroup className="px-2">
           {!collapsed && (
-            <SidebarGroupLabel className="px-2 text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em] mb-4">
+            <SidebarGroupLabel className="px-2 text-[10px] font-mono text-muted-foreground uppercase tracking-[0.2em] mb-4">
               Core Platform
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
             <SidebarMenu className="gap-1.5">
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group/item ${isActive
-                          ? "bg-primary/20 text-primary border-l-2 border-primary"
-                          : "text-slate-300 hover:bg-white/10 hover:text-white"
-                        }`
-                      }
-                    >
-                      {({ isActive }) => (
+              {items.map((item) => {
+                const isItemActive = currentPath === item.url;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isItemActive}>
+                      <NavLink
+                        to={item.url}
+                        className={
+                          `flex items-center gap-3 px-3 py-2 rounded-none transition-all duration-200 group/item ${isItemActive
+                            ? "bg-muted/50 text-foreground border-l-[3px] border-primary font-medium"
+                            : "text-muted-foreground hover:bg-muted/30 hover:text-foreground font-normal border-l-[3px] border-transparent"
+                          }`
+                        }
+                      >
                         <>
-                          <item.icon className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${isActive ? "text-white scale-110" : "text-slate-300 group-hover/item:text-white group-hover/item:scale-110"}`} />
+                          <item.icon className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${isItemActive ? "text-primary" : "text-muted-foreground group-hover/item:text-foreground"}`} />
                           {!collapsed && (
-                            <span className="font-medium text-sm whitespace-nowrap opacity-100 transition-opacity duration-300">
+                            <span className="text-sm whitespace-nowrap opacity-100 transition-opacity duration-300">
                               {item.title}
                             </span>
                           )}
                         </>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -122,12 +123,12 @@ export function AppSidebar() {
         <div className="mt-auto px-2 pb-6">
           <SidebarMenuButton asChild>
             <button
-              className="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-slate-400 hover:bg-destructive/10 hover:text-destructive-foreground w-full"
+              className="flex items-center gap-3 px-3 py-2 rounded-none transition-all duration-200 text-muted-foreground hover:bg-destructive/5 hover:text-destructive hover:border-l-[3px] hover:border-destructive border-l-[3px] border-transparent w-full"
               onClick={handleSignOut}
             >
               <LogOut className="w-5 h-5 flex-shrink-0" />
               {!collapsed && (
-                <span className="font-medium text-sm whitespace-nowrap opacity-100 transition-opacity duration-300">
+                <span className="text-sm whitespace-nowrap opacity-100 transition-opacity duration-300">
                   Exit System
                 </span>
               )}

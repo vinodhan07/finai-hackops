@@ -223,8 +223,8 @@ const AuthPage = () => {
                         console.log('Login Failed');
                       }}
                       useOneTap
-                      theme="filled_blue"
-                      shape="pill"
+                      theme="filled_black"
+                      shape="rectangular"
                       text="continue_with"
                       width="100%"
                     />
@@ -335,8 +335,8 @@ const AuthPage = () => {
                         console.log('Login Failed');
                       }}
                       useOneTap
-                      theme="filled_blue"
-                      shape="pill"
+                      theme="filled_black"
+                      shape="rectangular"
                       text="signup_with"
                       width="100%"
                     />
