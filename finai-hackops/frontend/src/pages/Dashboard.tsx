@@ -148,14 +148,14 @@ const Dashboard = () => {
         animate="visible"
         className="space-y-6 pb-20"
       >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-serif font-bold text-foreground tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">Welcome back! Here's your financial overview.</p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+          <div className="w-full sm:w-auto">
+            <h1 className="text-3xl sm:text-4xl font-serif font-bold text-foreground tracking-tight">Dashboard</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">Welcome back! Here's your financial overview.</p>
           </div>
-          <div className="text-right">
-            <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Last updated</p>
-            <p className="text-sm font-mono font-medium">2 minutes ago</p>
+          <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto bg-card sm:bg-transparent p-3 sm:p-0 rounded-xl sm:rounded-none border border-border/50 sm:border-none shadow-sm sm:shadow-none">
+            <p className="text-[10px] sm:text-xs font-mono text-muted-foreground uppercase tracking-wider">Last updated</p>
+            <p className="text-xs sm:text-sm font-mono font-medium">2 minutes ago</p>
           </div>
         </div>
 
@@ -173,7 +173,7 @@ const Dashboard = () => {
                 <DollarSign className="h-4 w-4 text-income" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-mono font-medium tracking-tight text-foreground">₹{currentBalance.toLocaleString()}</div>
+                <div className="text-2xl lg:text-3xl font-mono font-medium tracking-tight text-foreground">₹{currentBalance.toLocaleString()}</div>
                 <div className="flex items-center text-xs text-income mt-2">
                   <ArrowUpRight className="w-3 h-3 mr-1" />
                   +12.5% from last month
@@ -189,7 +189,7 @@ const Dashboard = () => {
                 <CreditCard className="h-4 w-4 text-expense" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-mono font-medium tracking-tight text-foreground">₹{monthlySpent.toLocaleString()}</div>
+                <div className="text-2xl lg:text-3xl font-mono font-medium tracking-tight text-foreground">₹{monthlySpent.toLocaleString()}</div>
                 <div className="flex items-center text-xs text-expense mt-2">
                   <ArrowDownRight className="w-3 h-3 mr-1" />
                   +8.2% from last month
@@ -205,7 +205,7 @@ const Dashboard = () => {
                 <Target className="h-4 w-4 text-budget-warning" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-mono font-medium tracking-tight text-foreground">{budgetUsed}%</div>
+                <div className="text-2xl lg:text-3xl font-mono font-medium tracking-tight text-foreground">{budgetUsed}%</div>
                 <div className="w-full bg-muted rounded-none h-1 mt-3 overflow-hidden">
                   <motion.div
                     className={`h-1 ${budgetUsed > 100 ? 'bg-destructive' : 'bg-budget-warning'}`}
@@ -230,7 +230,7 @@ const Dashboard = () => {
                 <TrendingUp className="h-4 w-4 text-savings" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-mono font-medium tracking-tight text-foreground">{savingsProgress}%</div>
+                <div className="text-2xl lg:text-3xl font-mono font-medium tracking-tight text-foreground">{savingsProgress}%</div>
                 <div className="w-full bg-muted rounded-none h-1 mt-3 overflow-hidden">
                   <motion.div
                     className="bg-savings h-1"
@@ -250,7 +250,7 @@ const Dashboard = () => {
                 <Activity className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-mono font-medium tracking-tight text-foreground">
+                <div className="text-2xl lg:text-3xl font-mono font-medium tracking-tight text-foreground">
                   {cibilScore ? cibilScore : "---"}
                 </div>
                 <div className={`flex items-center text-xs mt-2 ${cibilScore
@@ -276,9 +276,9 @@ const Dashboard = () => {
         </motion.div>
 
         {/* FinPilot AI Assistant & Upcoming Bills */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <motion.div variants={itemVariants} className="lg:col-span-2">
-            <Card className="bg-card shadow-card border border-border/50 h-full flex flex-col min-h-[500px] rounded-none">
+            <Card className="bg-card shadow-card border border-border/50 flex flex-col h-[65vh] md:h-[600px] min-h-[400px] md:min-h-[500px] rounded-none">
               <CardHeader className="border-b border-border/50 pb-4">
                 <CardTitle className="text-xl font-serif text-foreground flex items-center">
                   <Bot className="w-5 h-5 mr-3 text-primary" />
@@ -287,7 +287,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="flex-1 flex flex-col space-y-4">
                 {/* Chat Messages */}
-                <div className="flex-1 overflow-y-auto flex flex-col gap-4 p-4 bg-muted/20 rounded-lg min-h-[300px] overflow-x-hidden">
+                <div className="flex-1 overflow-y-auto flex flex-col gap-4 p-3 sm:p-4 bg-muted/20 rounded-lg min-h-[250px] overflow-x-hidden">
                   <AnimatePresence initial={false}>
                     {messages.map((msg, index) => (
                       <motion.div
@@ -361,7 +361,7 @@ const Dashboard = () => {
                   Upcoming Obligations
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 sm:space-y-4 max-h-[400px] lg:max-h-none overflow-y-auto">
                 {upcomingBills.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground italic">No upcoming bills found.</p>

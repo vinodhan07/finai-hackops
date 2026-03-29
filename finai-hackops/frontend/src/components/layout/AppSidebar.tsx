@@ -38,12 +38,12 @@ const items = [
 ];
 
 export function AppSidebar() {
-  const { state, setOpen } = useSidebar();
+  const { state, setOpen, isMobile } = useSidebar();
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
   const { user, signOut } = useAuth();
-  const collapsed = state === 'collapsed';
+  const collapsed = state === 'collapsed' && !isMobile;
 
   const handleSignOut = async () => {
     await signOut();

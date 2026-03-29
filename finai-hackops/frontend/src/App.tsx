@@ -25,7 +25,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BudgetProvider>
-          <Router>
+          <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<AuthPage />} />
