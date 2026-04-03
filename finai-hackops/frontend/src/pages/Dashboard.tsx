@@ -14,10 +14,15 @@ import {
   ArrowDownRight,
   Send,
   Bot,
-  Activity
+  Activity,
+  Heart,
+  CheckCircle,
+  Clock,
+  Plus
 } from "lucide-react";
 import { useBudget } from "@/contexts/BudgetContext";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiClient } from "@/services/api";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -47,13 +52,15 @@ const itemVariants: Variants = {
 };
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { getCurrentBalance, getTotalSpent, getBudgetUsagePercentage, getSavingsPercentage } = useBudget();
   const { toast } = useToast();
   const { user } = useAuth();
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [upcomingBills, setUpcomingBills] = useState([]);
-  const [cibilScore, setCibilScore] = useState<number | null>(null);
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [spendingBreakdown, setSpendingBreakdown] = useState([]);
   const [messages, setMessages] = useState([
     {
       type: 'bot',
@@ -66,21 +73,57 @@ const Dashboard = () => {
   const budgetUsed = getBudgetUsagePercentage();
   const savingsProgress = getSavingsPercentage();
 
+  // Health Score Logic
+  const getHealthStatus = () => {
+    if (budgetUsed <= 80) return { 
+      status: 'Healthy', 
+      color: 'text-income', 
+      bgColor: 'bg-income',
+      message: 'Your family health spending is within safe limits.',
+      level: 'healthy'
+    };
+    if (budgetUsed <= 100) return { 
+      status: 'Moderate', 
+      color: 'text-warning', 
+      bgColor: 'bg-warning',
+      message: 'Your spending is approaching your budget limits. Be careful.',
+      level: 'moderate'
+    };
+    return { 
+      status: 'Critical', 
+      color: 'text-destructive', 
+      bgColor: 'bg-destructive',
+      message: 'You have exceeded your family budget limits!',
+      level: 'critical'
+    };
+  };
+
+  const health = getHealthStatus();
+
   // Fetch upcoming bills (Simplified or Mocked for now)
   const fetchUpcomingBills = async () => {
     // Placeholder - will implement reminder endpoints soon
     setUpcomingBills([]);
   };
 
-  // Fetch CIBIL score (Simplified or Mocked for now)
-  const fetchCibilScore = async () => {
-    // Placeholder
-    setCibilScore(null);
+  // Fetch dashboard data
+  const fetchDashboardData = async () => {
+    if (!user) return;
+    try {
+      const [recent, breakdown] = await Promise.all([
+        apiClient.get(`/transactions/recent/${user.id}`),
+        apiClient.get(`/transactions/breakdown/${user.id}`)
+      ]);
+      setRecentTransactions(recent);
+      setSpendingBreakdown(breakdown);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    }
   };
 
   useEffect(() => {
     fetchUpcomingBills();
-    fetchCibilScore();
+    fetchDashboardData();
   }, [user]);
 
   const handleSendMessage = async () => {
@@ -161,7 +204,7 @@ const Dashboard = () => {
 
         {/* Key Metrics Cards */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -242,37 +285,143 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </motion.div>
+          </motion.div>
 
+        {/* Spending Breakdown & Recent Transactions */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* Spending Breakdown */}
           <motion.div variants={itemVariants}>
-            <Card className="bg-card shadow-card border border-border/50 hover-scale cursor-default h-full rounded-none">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-xs font-mono uppercase tracking-widest text-muted-foreground">CIBIL Score</CardTitle>
-                <Activity className="h-4 w-4 text-primary" />
+            <Card className="bg-card shadow-card border border-border/50 rounded-none h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border/50">
+                <CardTitle className="text-xl font-serif text-foreground flex items-center">
+                  <Clock className="w-5 h-5 mr-3 text-primary" />
+                  Spending Breakdown
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-2xl lg:text-3xl font-mono font-medium tracking-tight text-foreground">
-                  {cibilScore ? cibilScore : "---"}
-                </div>
-                <div className={`flex items-center text-xs mt-2 ${cibilScore
-                  ? cibilScore >= 750
-                    ? 'text-income'
-                    : cibilScore >= 650
-                      ? 'text-budget-warning'
-                      : 'text-expense'
-                  : 'text-muted-foreground'
-                  }`}>
-                  {cibilScore ? (
-                    <>
-                      <Activity className="w-3 h-3 mr-1" />
-                      {cibilScore >= 750 ? 'Excellent' : cibilScore >= 650 ? 'Good' : 'Needs Improvement'}
-                    </>
-                  ) : (
-                    'Add in Profile'
-                  )}
-                </div>
+              <CardContent className="pt-6 flex flex-col space-y-4">
+                {spendingBreakdown.length === 0 ? (
+                  <div className="py-10 flex flex-col items-center justify-center text-center space-y-4">
+                    <p className="text-muted-foreground italic">No expenses recorded yet</p>
+                    <Button 
+                      onClick={() => navigate('/transactions')}
+                      className="bg-[#0f172a] hover:bg-[#1e293b] text-white rounded-md px-6 shadow-sm"
+                    >
+                      Add Your First Expense
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                    {spendingBreakdown.map((item: any, i: number) => (
+                      <div key={i} className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="font-medium text-foreground capitalize">{item.category}</span>
+                          <span className="font-mono text-muted-foreground">₹{item.total.toLocaleString()}</span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min((item.total / (monthlySpent || 1)) * 100, 100)}%` }}
+                            className="bg-primary h-full"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
+
+          {/* Recent Transactions */}
+          <motion.div variants={itemVariants}>
+            <Card className="bg-card shadow-card border border-border/50 rounded-none h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border/50">
+                <CardTitle className="text-xl font-serif text-foreground">
+                  Recent Transactions
+                </CardTitle>
+                <Button 
+                  variant="link" 
+                  onClick={() => navigate('/transactions')}
+                  className="text-sm font-medium text-primary hover:no-underline p-0 flex items-center"
+                >
+                  View All
+                </Button>
+              </CardHeader>
+              <CardContent className="pt-4">
+                {recentTransactions.length === 0 ? (
+                  <div className="py-16 flex flex-col items-center justify-center text-center">
+                    <p className="text-muted-foreground italic">No transactions yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {recentTransactions.map((tx: any) => (
+                      <div key={tx.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/20 hover:bg-muted/40 transition-colors border border-border/10">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${tx.transaction_type === 'income' ? 'bg-income/10 text-income' : 'bg-expense/10 text-expense'}`}>
+                            {tx.transaction_type === 'income' ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-foreground">{tx.description || tx.category}</p>
+                            <p className="text-[10px] text-muted-foreground font-mono">{tx.transaction_date}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-sm font-bold ${tx.transaction_type === 'income' ? 'text-income' : 'text-expense'}`}>
+                            {tx.transaction_type === 'income' ? '+' : '-'}₹{tx.amount.toLocaleString()}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{tx.category}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Family Health Score Section */}
+        <motion.div variants={itemVariants}>
+          <Card className="bg-card shadow-card border border-border/50 rounded-none overflow-hidden relative">
+            <CardContent className="p-6">
+              <div className="flex flex-col space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Heart className="w-5 h-5 text-income fill-income/10" />
+                  <h3 className="text-xl font-serif font-bold text-foreground">Family Health Score</h3>
+                </div>
+                
+                <div className="flex items-start gap-4">
+                  {/* Traffic Light Cluster */}
+                  <div className="bg-muted/30 p-2 rounded-lg flex flex-col gap-1.5">
+                    <div className={`w-4 h-4 rounded-full ${health.level === 'healthy' ? 'bg-income shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-muted/40'}`}></div>
+                    <div className={`w-4 h-4 rounded-full ${health.level === 'moderate' ? 'bg-warning shadow-[0_0_8px_rgba(234,179,8,0.4)]' : 'bg-muted/40'}`}></div>
+                    <div className={`w-4 h-4 rounded-full ${health.level === 'critical' ? 'bg-destructive shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 'bg-muted/40'}`}></div>
+                  </div>
+
+                  <div className="flex flex-col justify-center">
+                    <div className="flex items-center gap-2">
+                      {health.level === 'healthy' && <CheckCircle className="w-5 h-5 text-income" />}
+                      <span className={`text-lg font-bold ${health.color}`}>{health.status}</span>
+                    </div>
+                    <p className="text-muted-foreground mt-1 text-sm md:text-base leading-relaxed">{health.message}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Bar Legend */}
+              <div className="mt-8 pt-6 border-t border-border/50 flex flex-wrap items-center justify-start gap-8">
+                <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted-foreground">
+                  <div className="w-2.5 h-2.5 rounded-full bg-income"></div> Healthy
+                </div>
+                <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted-foreground">
+                  <div className="w-2.5 h-2.5 rounded-full bg-warning"></div> Moderate
+                </div>
+                <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-muted-foreground">
+                  <div className="w-2.5 h-2.5 rounded-full bg-destructive"></div> Critical
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
 
         {/* FinPilot AI Assistant & Upcoming Bills */}
@@ -400,6 +549,7 @@ const Dashboard = () => {
             </Card>
           </motion.div>
         </div>
+
       </motion.div>
     </Layout>
   );

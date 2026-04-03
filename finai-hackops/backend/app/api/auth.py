@@ -55,7 +55,7 @@ async def google_auth(data: GoogleToken):
     try:
         # Specify the CLIENT_ID of the app that accesses the backend:
         CLIENT_ID = "743696234738-4s6o73beo374rbc7polnpgk38hshfi77.apps.googleusercontent.com"
-        idinfo = id_token.verify_oauth2_token(data.token, requests.Request(), CLIENT_ID)
+        idinfo = id_token.verify_oauth2_token(data.token, requests.Request(), CLIENT_ID, clock_skew_in_seconds=10)
 
         # ID token is valid. Get the user's Google Account ID from the decoded token.
         email = idinfo['email']
@@ -91,6 +91,7 @@ async def google_auth(data: GoogleToken):
                 "full_name": db_user.get('full_name')
             }
         }
-    except ValueError:
+    except ValueError as e:
         # Invalid token
-        raise HTTPException(status_code=400, detail="Invalid Google token")
+        print(f"Google Auth Error: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Invalid Google token: {str(e)}")

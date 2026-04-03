@@ -19,6 +19,23 @@ class TransactionCreate(BaseModel):
 async def get_transactions(user_id: int):
     return db.fetch_all("SELECT * FROM transactions WHERE user_id = ? ORDER BY transaction_date DESC", (user_id,))
 
+@router.get("/recent/{user_id}", response_model=List[dict])
+async def get_recent_transactions(user_id: int):
+    return db.fetch_all(
+        "SELECT * FROM transactions WHERE user_id = ? ORDER BY transaction_date DESC LIMIT 5",
+        (user_id,)
+    )
+
+@router.get("/breakdown/{user_id}", response_model=List[dict])
+async def get_spending_breakdown(user_id: int):
+    return db.fetch_all(
+        """SELECT category, SUM(amount) as total 
+           FROM transactions 
+           WHERE user_id = ? AND transaction_type = 'expense' 
+           GROUP BY category""",
+        (user_id,)
+    )
+
 @router.post("/")
 async def create_transaction(transaction: TransactionCreate):
     transaction_id = db.execute_query(
